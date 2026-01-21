@@ -4,7 +4,7 @@ Ralph Kit is a portable **implementation + augmentation** of the workflow descri
 
 - Playbook (how/why): https://github.com/ghuntley/how-to-ralph-wiggum
 - This repo (do/ship): scripts + markdown templates you can apply to any codebase.
-- Landing page (GitHub Pages): https://zakelfassi.github.io/Ralph-Kit/
+- Landing page: https://ralphkit.zakelfassi.com
 
 ## Landing page (GitHub Pages)
 
@@ -17,8 +17,18 @@ To publish it:
 3. Branch: `main` and Folder: `/ (root)`
 4. Save and wait for the Pages URL to appear.
 
-Live URL: https://zakelfassi.github.io/Ralph-Kit/  
+Live URL: https://ralphkit.zakelfassi.com  
 (For forks: `https://<your-user>.github.io/<your-repo>/`.)
+
+### Custom domain
+
+To use `ralphkit.zakelfassi.com`:
+
+1. Add a DNS `CNAME` record: `ralphkit` → `zakelfassi.github.io`
+2. On GitHub: `Settings` → `Pages` → `Custom domain` → `ralphkit.zakelfassi.com`
+3. Enable `Enforce HTTPS` once the certificate is issued.
+
+The default GitHub Pages URL will remain available but typically redirects to the custom domain.
 
 
 ## What it adds (augmentations)
