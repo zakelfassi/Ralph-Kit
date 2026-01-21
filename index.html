@@ -969,11 +969,71 @@ cd /path/to/target-repo
           <div class="callout">
             <b>Full-auto ≠ reckless:</b> in auto-permissions mode, the agent can run arbitrary commands.
             Run in a dedicated VM/container. Treat the environment as disposable.
-            See <a class="underline" href="docs/sandboxing.md">docs/sandboxing.md</a>.
+            See <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>.
           </div>
         </section>
 
-        <section id="use">
+        
+
+        <section id="under-the-hood">
+          <div class="sectionhead">
+            <h2>What gets added to your repo</h2>
+            <p>
+              Ralph steers by <b>signs</b>: prompts, operational notes, patterns in your codebase, and backpressure from
+              tests/typecheck/lint. This kit drops in the structure so the signs are consistent.
+            </p>
+          </div>
+
+          <div class="grid">
+            <div class="card" style="grid-column: span 7">
+              <h3>File layout</h3>
+              <p>Installer writes prompts + coordination files at repo root, and vendors the kit at <code>./ralph</code>.</p>
+              <div class="code" style="margin-top: 12px">
+                <button class="copy" data-copy="#tree">Copy</button>
+                <pre id="tree">./
+├─ AGENTS.md
+├─ PROMPT_plan.md
+├─ PROMPT_plan_work.md
+├─ PROMPT_build.md
+├─ IMPLEMENTATION_PLAN.md
+├─ REQUESTS.md
+├─ QUESTIONS.md
+├─ STATUS.md
+├─ CHANGELOG.md
+├─ specs/
+│  ├─ feature_template.md
+│  └─ ...
+├─ docs/
+│  ├─ README.md
+│  └─ ...
+└─ ralph/
+   ├─ bin/loop.sh
+   ├─ bin/ralph-daemon.sh
+   ├─ bin/kickoff.sh
+   ├─ config.sh
+   └─ ...</pre>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: span 5">
+              <h3>Routing + knobs</h3>
+              <p>Works with Codex and/or Claude. By default: Codex plans/reviews, Claude builds. Override via env.</p>
+              <ul style="margin: 10px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 14px">
+                <li><code>AI_MODEL=claude|codex</code> force one model</li>
+                <li><code>RALPH_AUTOPUSH=false</code> by default</li>
+                <li><code>RALPH_TEST_CMD</code> run after review auto-fixes</li>
+                <li><code>RALPH_DEPLOY_CMD</code> used by daemon on <code>[DEPLOY]</code></li>
+                <li><code>CODEX_PLANNING_CONFIG</code> / <code>CODEX_REVIEW_CONFIG</code> reasoning tuning</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout">
+            <b>Tune it like a guitar:</b> if Ralph is producing the wrong shape of code, don’t only tweak prompts — add
+            better utilities/patterns and strengthen backpressure. The repo itself becomes the steering wheel.
+          </div>
+        </section>
+<section id="use">
           <div class="sectionhead">
             <h2>How to use it</h2>
             <p>
@@ -1021,7 +1081,7 @@ cd /path/to/your/new-repo</pre>
                 </li>
               </ul>
               <p style="margin-top: 10px; color: var(--ink-2); font-size: 14px">
-                Read the full kickoff workflow: <a class="underline" href="docs/kickoff.md">docs/kickoff.md</a>
+                Read the full kickoff workflow: <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/kickoff.md" target="_blank" rel="noreferrer">docs/kickoff.md</a>
               </p>
             </div>
 
@@ -1111,8 +1171,8 @@ cd ~/work/repo
           </div>
 
           <p style="margin-top: 12px; color: var(--ink-2); font-size: 14px">
-            More details: <a class="underline" href="ops/gcp/README.md">ops/gcp/README.md</a> and
-            <a class="underline" href="docs/sandboxing.md">docs/sandboxing.md</a>
+            More details: <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/ops/gcp/README.md" target="_blank" rel="noreferrer">ops/gcp/README.md</a> and
+            <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>
           </p>
         </section>
 
