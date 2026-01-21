@@ -11,6 +11,7 @@ Ralph Kit is a portable **implementation + augmentation** of the workflow descri
 - **`plan-work` mode** for branch-scoped planning (avoids unreliable “filter tasks at runtime”)
 - **Safer defaults**: `RALPH_AUTOPUSH=false` by default
 - **Runtime isolation**: logs/state in `.ralph/` (auto gitignored by installer)
+- **Greenfield kickoff** helper to generate docs/specs via a memory-backed agent
 - **Optional Slack loop**: `ask.sh` + `QUESTIONS.md`, `notify.sh`
 - **Optional daemon** with `[PAUSE]`, `[REPLAN]`, `[DEPLOY]` triggers in `REQUESTS.md`
 - **Optional structured review/security gate** via JSON schemas
@@ -27,6 +28,17 @@ If the kit is already vendored in a target repo at `./ralph`:
 ./ralph/install.sh --wrapper
 ```
 
+## Kickoff (greenfield)
+
+For projects starting from scratch, generate a prompt you can paste into a memory-backed agent (ChatGPT Projects, Claude Projects, etc.) to create high-quality `docs/*` + `specs/*`:
+
+```bash
+cd /path/to/target-repo
+./ralph.sh kickoff "<one paragraph project brief>"
+```
+
+- Guide: `docs/kickoff.md`
+
 ## Run (in the target repo)
 
 ```bash
@@ -39,10 +51,12 @@ Daemon mode:
 ./ralph/bin/ralph-daemon.sh 300
 ```
 
-## Run safely (VMs / Docker)
+## Run safely (GCP VM / Docker)
 
-If you’re using auto-permissions (`--dangerously-skip-permissions`, `--full-auto`), run in an isolated environment:
-- `docs/sandboxing.md`
+If you’re using auto-permissions (`--dangerously-skip-permissions`, `--full-auto`), run in an isolated environment.
+
+- Full guide + pricing notes: `docs/sandboxing.md`
+- One-command GCP VM provisioner: `ops/gcp/provision.sh`
 
 ## Config
 

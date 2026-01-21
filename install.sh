@@ -144,6 +144,7 @@ Usage:
   ./ralph.sh daemon [interval_seconds]
   ./ralph.sh ask "category" "question"
   ./ralph.sh notify "emoji" "title" "message"
+  ./ralph.sh kickoff "<brief>" [--project <name>] [--seed <path-or-url>] [--notes <text>] [--out <path>]
 USAGE
 }
 
@@ -172,6 +173,10 @@ case "$cmd" in
   notify)
     shift
     exec "$REPO_DIR/ralph/bin/notify.sh" "$@"
+    ;;
+  kickoff)
+    shift
+    exec "$REPO_DIR/ralph/bin/kickoff.sh" "$@"
     ;;
   ""|-h|--help)
     usage

@@ -84,6 +84,21 @@ This avoids mounting your working copy, at the cost of extra setup.
 
 ### Google Cloud (gcloud)
 
+Quick provision (recommended):
+
+```bash
+cd /path/to/ralph-kit
+OPENAI_API_KEY=... ANTHROPIC_API_KEY=... ops/gcp/provision.sh --name ralph-runner --project <gcp-project> --zone us-central1-a
+```
+
+Dry-run (prints commands only):
+
+```bash
+ops/gcp/provision.sh --name ralph-runner --project <gcp-project> --zone us-central1-a --dry-run
+```
+
+Manual provisioning:
+
 Create a VM (example uses `e2-standard-4`):
 
 ```bash
