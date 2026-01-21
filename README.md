@@ -4,6 +4,22 @@ Ralph Kit is a portable **implementation + augmentation** of the workflow descri
 
 - Playbook (how/why): https://github.com/ghuntley/how-to-ralph-wiggum
 - This repo (do/ship): scripts + markdown templates you can apply to any codebase.
+- Landing page (GitHub Pages): https://zakelfassi.github.io/Ralph-Kit/
+
+## Landing page (GitHub Pages)
+
+This repo includes a static landing page at `index.html`.
+
+To publish it:
+
+1. On GitHub: `Settings` → `Pages`
+2. Source: `Deploy from a branch`
+3. Branch: `main` and Folder: `/ (root)`
+4. Save and wait for the Pages URL to appear.
+
+Live URL: https://zakelfassi.github.io/Ralph-Kit/  
+(For forks: `https://<your-user>.github.io/<your-repo>/`.)
+
 
 ## What it adds (augmentations)
 - **Portable kit** vendorable as `ralph/` into any repo
