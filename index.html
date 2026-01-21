@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Ralph Kit — Provision a Ralph-equipped VM. Augment any repo.</title>
+    <meta
+      name="description"
+      content="Ralph Kit is a portable implementation + augmentation of Geoff Huntley’s Ralph methodology: kickoff specs with a memory-backed agent, plan from specs, build with backpressure, and run full-auto in a dedicated VM."
+    />
+    <meta name="theme-color" content="#0b0f14" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Ralph Kit" />
+    <meta
+      property="og:description"
+      content="Provision a Ralph-equipped VM. Augment any repo with a Ralph loop (kickoff → plan → build)."
+    />
+    <meta property="og:type" content="website" />
+
+    <!-- Fonts (intentionally not Inter/Roboto/Space Grotesk) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Literata:opsz,wght@7..72,400;7..72,600&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --font-display: "Unbounded", system-ui, -apple-system, Segoe UI, sans-serif;
+        --font-body: "Literata", ui-serif, Georgia, "Times New Roman", serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+
+        --ink: #0b0f14;
+        --ink-2: rgba(11, 15, 20, 0.78);
+        --paper: #fbf7f0;
+        --paper-2: #fffdf8;
+        --paper-3: rgba(255, 253, 248, 0.72);
+
+        --grid: rgba(11, 15, 20, 0.06);
+        --grid-strong: rgba(11, 15, 20, 0.11);
+
+        --accent: #1fe38b; /* highlighter mint */
+        --accent-ink: #0a2b1b;
+        --accent-2: #ff5a7a; /* blush */
+        --accent-3: #5b66ff; /* indigo */
+
+        --shadow: 0 18px 55px rgba(10, 15, 20, 0.14);
+        --shadow-tight: 0 10px 26px rgba(10, 15, 20, 0.12);
+
+        --radius: 18px;
+        --radius-sm: 12px;
+
+        --container: 1120px;
+
+        --ring: 0 0 0 3px rgba(31, 227, 139, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        * {
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: var(--font-body);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+
+      /* Paper atmosphere + grid */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(1100px 560px at 12% -8%, rgba(31, 227, 139, 0.26), transparent 62%),
+          radial-gradient(900px 520px at 88% 10%, rgba(91, 102, 255, 0.12), transparent 60%),
+          radial-gradient(900px 520px at 70% 110%, rgba(255, 90, 122, 0.13), transparent 55%),
+          repeating-linear-gradient(0deg, var(--grid) 0, var(--grid) 1px, transparent 1px, transparent 26px),
+          repeating-linear-gradient(90deg, var(--grid) 0, var(--grid) 1px, transparent 1px, transparent 26px);
+        opacity: 1;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: -60px;
+        pointer-events: none;
+        background:
+          radial-gradient(closest-side, rgba(11, 15, 20, 0.06), transparent 60%),
+          radial-gradient(closest-side, rgba(11, 15, 20, 0.05), transparent 60%);
+        filter: blur(28px);
+        opacity: 0.5;
+        transform: rotate(-4deg);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a.underline {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: var(--container);
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .skip {
+        position: absolute;
+        left: -999px;
+        top: 10px;
+        background: var(--paper-2);
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--grid-strong);
+      }
+
+      .skip:focus {
+        left: 14px;
+        outline: none;
+        box-shadow: var(--ring);
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(10px);
+        background: rgba(251, 247, 240, 0.75);
+        border-bottom: 1px solid rgba(11, 15, 20, 0.08);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 240px;
+      }
+
+      .mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(31, 227, 139, 0.9), rgba(91, 102, 255, 0.9));
+        box-shadow: 0 10px 26px rgba(31, 227, 139, 0.18);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .mark::before {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        background:
+          radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), transparent 46%),
+          radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.8), transparent 55%),
+          repeating-linear-gradient(45deg, rgba(11, 15, 20, 0.12) 0, rgba(11, 15, 20, 0.12) 1px, transparent 1px, transparent 8px);
+        opacity: 0.35;
+        transform: rotate(10deg);
+      }
+
+      .brand h1 {
+        font-family: var(--font-display);
+        font-size: 16px;
+        letter-spacing: -0.02em;
+        margin: 0;
+        line-height: 1.1;
+      }
+
+      .brand p {
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: var(--ink-2);
+        line-height: 1.2;
+      }
+
+      .navlinks {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        background: var(--paper-2);
+        box-shadow: 0 10px 22px rgba(10, 15, 20, 0.06);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      .pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 34px rgba(10, 15, 20, 0.1);
+      }
+
+      .pill:focus-visible {
+        outline: none;
+        box-shadow: var(--ring);
+      }
+
+      .pill .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(31, 227, 139, 0.25);
+      }
+
+      .pill.secondary .dot {
+        background: var(--accent-3);
+        box-shadow: 0 0 0 3px rgba(91, 102, 255, 0.18);
+      }
+
+      .pill.ghost {
+        background: transparent;
+        box-shadow: none;
+      }
+
+      main {
+        padding: 48px 0 74px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 28px;
+        align-items: start;
+        padding: 28px;
+        border-radius: calc(var(--radius) + 10px);
+        background: var(--paper-3);
+        border: 1px solid rgba(11, 15, 20, 0.11);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        border-radius: calc(var(--radius) + 12px);
+        background:
+          radial-gradient(550px 240px at 20% 0%, rgba(31, 227, 139, 0.18), transparent 70%),
+          radial-gradient(420px 240px at 100% 10%, rgba(91, 102, 255, 0.12), transparent 60%),
+          radial-gradient(420px 240px at 78% 120%, rgba(255, 90, 122, 0.1), transparent 60%);
+        opacity: 1;
+        pointer-events: none;
+      }
+
+      .hero > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .kicker {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px dashed rgba(11, 15, 20, 0.22);
+        background: rgba(255, 253, 248, 0.8);
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      .kicker b {
+        font-weight: 600;
+      }
+
+      .hero h2 {
+        font-family: var(--font-display);
+        margin: 14px 0 10px;
+        font-size: clamp(34px, 4.2vw, 58px);
+        line-height: 1.04;
+        letter-spacing: -0.04em;
+      }
+
+      .hero h2 .hl {
+        background: linear-gradient(0deg, rgba(31, 227, 139, 0.55), rgba(31, 227, 139, 0.55));
+        box-shadow: inset 0 -0.45em 0 rgba(31, 227, 139, 0.36);
+        padding: 0 0.1em;
+        border-radius: 10px;
+      }
+
+      .lead {
+        margin: 0;
+        font-size: 17px;
+        color: var(--ink-2);
+        max-width: 60ch;
+      }
+
+      .ctas {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .btn {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: var(--ink);
+        color: var(--paper-2);
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        letter-spacing: -0.02em;
+        box-shadow: 0 16px 34px rgba(10, 15, 20, 0.25);
+        transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 22px 48px rgba(10, 15, 20, 0.28);
+        filter: saturate(1.05);
+      }
+
+      .btn:focus-visible {
+        outline: none;
+        box-shadow: var(--ring);
+      }
+
+      .btn.alt {
+        background: var(--paper-2);
+        color: var(--ink);
+        border: 1px solid rgba(11, 15, 20, 0.14);
+        box-shadow: 0 16px 34px rgba(10, 15, 20, 0.1);
+      }
+
+      .btn.alt:hover {
+        box-shadow: 0 22px 48px rgba(10, 15, 20, 0.14);
+      }
+
+      .btn .spark {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(31, 227, 139, 0.25);
+      }
+
+      .sticker {
+        position: absolute;
+        right: 18px;
+        top: 18px;
+        transform: rotate(8deg);
+        background: rgba(31, 227, 139, 0.9);
+        color: var(--accent-ink);
+        padding: 10px 12px;
+        border-radius: 14px;
+        font-family: var(--font-display);
+        font-size: 12px;
+        letter-spacing: -0.02em;
+        box-shadow: 0 20px 46px rgba(31, 227, 139, 0.22);
+        border: 1px solid rgba(10, 15, 20, 0.18);
+      }
+
+      .sticker span {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 11px;
+        opacity: 0.8;
+      }
+
+      .panel {
+        border-radius: var(--radius);
+        background: rgba(255, 253, 248, 0.88);
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        box-shadow: var(--shadow-tight);
+        padding: 14px 14px 10px;
+      }
+
+      .panel h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 14px;
+        letter-spacing: -0.02em;
+      }
+
+      .panel p {
+        margin: 6px 0 10px;
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+
+      .code {
+        position: relative;
+        background: #0b0f14;
+        color: rgba(255, 253, 248, 0.92);
+        border-radius: 14px;
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+      }
+
+      .code::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background:
+          radial-gradient(260px 120px at 18% 0%, rgba(31, 227, 139, 0.18), transparent 60%),
+          radial-gradient(240px 120px at 95% 15%, rgba(91, 102, 255, 0.14), transparent 60%);
+        opacity: 1;
+        pointer-events: none;
+      }
+
+      pre {
+        margin: 0;
+        position: relative;
+        z-index: 1;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: pre;
+        overflow: auto;
+      }
+
+      .copy {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        background: rgba(255, 253, 248, 0.1);
+        border: 1px solid rgba(255, 253, 248, 0.18);
+        color: rgba(255, 253, 248, 0.9);
+        border-radius: 999px;
+        padding: 8px 10px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        transition: transform 160ms ease, background 160ms ease;
+      }
+
+      .copy:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 253, 248, 0.14);
+      }
+
+      .copy:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(31, 227, 139, 0.35);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .card {
+        grid-column: span 6;
+        border-radius: var(--radius);
+        background: rgba(255, 253, 248, 0.82);
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        box-shadow: var(--shadow-tight);
+        padding: 18px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(520px 180px at 10% 0%, rgba(31, 227, 139, 0.08), transparent 60%);
+        pointer-events: none;
+      }
+
+      .card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .card h3 {
+        margin: 0 0 10px;
+        font-family: var(--font-display);
+        letter-spacing: -0.02em;
+        font-size: 18px;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .chiprow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 10px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        border: 1px solid rgba(11, 15, 20, 0.14);
+        background: rgba(251, 247, 240, 0.7);
+      }
+
+      .chip .tag {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(31, 227, 139, 0.18);
+      }
+
+      .chip.pink .tag {
+        background: var(--accent-2);
+        box-shadow: 0 0 0 3px rgba(255, 90, 122, 0.16);
+      }
+
+      .chip.blue .tag {
+        background: var(--accent-3);
+        box-shadow: 0 0 0 3px rgba(91, 102, 255, 0.16);
+      }
+
+      section {
+        margin-top: 34px;
+      }
+
+      .sectionhead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .sectionhead h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .sectionhead p {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 14px;
+        max-width: 70ch;
+      }
+
+      .how {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .step {
+        border-radius: var(--radius);
+        padding: 16px;
+        background: rgba(255, 253, 248, 0.78);
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        box-shadow: var(--shadow-tight);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .step::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(520px 160px at 10% 0%, rgba(91, 102, 255, 0.07), transparent 55%),
+          radial-gradient(520px 160px at 100% 80%, rgba(31, 227, 139, 0.08), transparent 55%);
+        pointer-events: none;
+      }
+
+      .step > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .step .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: rgba(31, 227, 139, 0.18);
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        font-family: var(--font-display);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .step h4 {
+        margin: 12px 0 8px;
+        font-family: var(--font-display);
+        font-size: 16px;
+        letter-spacing: -0.02em;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .tabs {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .tab {
+        border: 1px solid rgba(11, 15, 20, 0.14);
+        background: rgba(255, 253, 248, 0.82);
+        border-radius: 999px;
+        padding: 10px 12px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        cursor: pointer;
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+
+      .tab:hover {
+        transform: translateY(-1px);
+      }
+
+      .tab[aria-selected="true"] {
+        background: rgba(31, 227, 139, 0.22);
+        box-shadow: 0 14px 28px rgba(31, 227, 139, 0.14);
+      }
+
+      .tab:focus-visible {
+        outline: none;
+        box-shadow: var(--ring);
+      }
+
+      .tabpanels {
+        margin-top: 12px;
+      }
+
+      .panelbox {
+        border-radius: var(--radius);
+        padding: 18px;
+        background: rgba(255, 253, 248, 0.82);
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        box-shadow: var(--shadow-tight);
+      }
+
+      .panelbox h3 {
+        margin: 0 0 10px;
+        font-family: var(--font-display);
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+
+      .panelbox ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .panelbox li {
+        margin: 8px 0;
+      }
+
+      .callout {
+        margin-top: 14px;
+        border-radius: var(--radius);
+        padding: 14px 14px;
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        background: rgba(11, 15, 20, 0.04);
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+
+      .callout b {
+        color: var(--ink);
+      }
+
+      footer {
+        margin-top: 38px;
+        padding: 22px 0 10px;
+        border-top: 1px solid rgba(11, 15, 20, 0.1);
+        color: rgba(11, 15, 20, 0.7);
+        font-size: 13px;
+      }
+
+      .footergrid {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: start;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      @media (max-width: 980px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .sticker {
+          position: static;
+          transform: rotate(-3deg);
+          display: inline-flex;
+          width: fit-content;
+          margin-bottom: 10px;
+        }
+        .card {
+          grid-column: span 12;
+        }
+        .how {
+          grid-template-columns: 1fr;
+        }
+        .footergrid {
+          grid-template-columns: 1fr;
+        }
+        .links {
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .nav {
+          padding: 12px 0;
+        }
+        .brand {
+          min-width: unset;
+        }
+        .brand p {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+
+    <header>
+      <div class="container">
+        <div class="nav">
+          <div class="brand">
+            <div class="mark" aria-hidden="true"></div>
+            <div>
+              <h1>Ralph Kit</h1>
+              <p>Provision a Ralph VM. Augment any repo.</p>
+            </div>
+          </div>
+
+          <nav class="navlinks" aria-label="Primary">
+            <a class="pill ghost" href="#how"><span class="dot"></span>How it works</a>
+            <a class="pill ghost secondary" href="#use"><span class="dot"></span>Use it</a>
+            <a class="pill" href="#provision"><span class="dot"></span>Provision (GCP)</a>
+            <a class="pill" href="https://github.com/zakelfassi/Ralph-Kit" target="_blank" rel="noreferrer">
+              <span class="dot"></span>GitHub
+            </a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main id="content">
+      <div class="container">
+        <div class="hero">
+          <div class="sticker" aria-hidden="true">
+            I’m helping! <span>full-auto, but sandboxed</span>
+          </div>
+
+          <div>
+            <div class="kicker">
+              <b>Ralph</b> as a kit: <span>kickoff → plan → build</span>
+            </div>
+
+            <h2>
+              Build in loops.
+              <span class="hl">Ship with backpressure.</span>
+            </h2>
+
+            <p class="lead">
+              Ralph Kit is a portable implementation + augmentation of Geoff Huntley’s Ralph methodology.
+              It adds a repeatable kickoff flow for new projects, multi-model routing, and one-command GCP
+              provisioning so you can run full-auto safely in a dedicated VM.
+            </p>
+
+            <div class="ctas">
+              <a class="btn" href="#use"><span class="spark"></span>Get started</a>
+              <a class="btn alt" href="#provision"><span class="spark"></span>Provision a runner</a>
+              <a
+                class="btn alt"
+                href="https://github.com/ghuntley/how-to-ralph-wiggum"
+                target="_blank"
+                rel="noreferrer"
+                ><span class="spark"></span>Read the Playbook</a
+              >
+            </div>
+
+            <div class="grid">
+              <div class="card" style="grid-column: span 7">
+                <h3>What it adds</h3>
+                <p>
+                  The classic Ralph loop is tiny: <code>while :; do cat PROMPT.md | claude; done</code>. Ralph Kit keeps
+                  the simplicity, but adds the missing ergonomics and guardrails you actually want in a repo.
+                </p>
+                <div class="chiprow" role="list">
+                  <span class="chip" role="listitem"><span class="tag"></span><span>plan-work</span></span>
+                  <span class="chip blue" role="listitem"><span class="tag"></span><span>multi-model routing</span></span>
+                  <span class="chip" role="listitem"><span class="tag"></span><span>GCP provisioner</span></span>
+                  <span class="chip pink" role="listitem"><span class="tag"></span><span>kickoff prompt</span></span>
+                  <span class="chip" role="listitem"><span class="tag"></span><span>.ralph runtime</span></span>
+                </div>
+              </div>
+
+              <div class="card" style="grid-column: span 5">
+                <h3>Quick install</h3>
+                <p>
+                  Install the kit into any repo (writes docs + prompts + a wrapper), then run planning/build loops.
+                </p>
+                <div class="code" style="margin-top: 12px">
+                  <button class="copy" data-copy="#cmd-install">Copy</button>
+                  <pre id="cmd-install">./install.sh /path/to/target-repo --wrapper
+cd /path/to/target-repo
+./ralph.sh plan 1
+./ralph.sh build 10</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside>
+            <div class="panel">
+              <h3>One-command runner (GCP)</h3>
+              <p>
+                Full-auto works best when the VM is the security boundary.
+                Provision a dedicated runner and keep your laptop out of the blast radius.
+              </p>
+              <div class="code">
+                <button class="copy" data-copy="#cmd-gcp">Copy</button>
+                <pre id="cmd-gcp">OPENAI_API_KEY=... ANTHROPIC_API_KEY=... \
+  ops/gcp/provision.sh --name ralph-runner --project &lt;gcp-project&gt; --zone us-central1-a</pre>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top: 14px">
+              <h3>Source material</h3>
+              <p>
+                This kit is built to operationalize the playbook + methodology.
+              </p>
+              <div class="chiprow" role="list">
+                <a class="chip" role="listitem" href="https://ghuntley.com/ralph/" target="_blank" rel="noreferrer"
+                  ><span class="tag"></span><span>ghuntley.com/ralph</span></a
+                >
+                <a
+                  class="chip blue"
+                  role="listitem"
+                  href="https://github.com/ghuntley/how-to-ralph-wiggum"
+                  target="_blank"
+                  rel="noreferrer"
+                  ><span class="tag"></span><span>how-to-ralph-wiggum</span></a
+                >
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <section id="how">
+          <div class="sectionhead">
+            <h2>How it works</h2>
+            <p>
+              Ralph is a funnel: <b>kickoff</b> (optional, for greenfield) → <b>planning</b> (specs → plan) → <b>building</b>
+              (plan → code + tests). Ralph Kit makes this repeatable.
+            </p>
+          </div>
+
+          <div class="how">
+            <div class="step">
+              <div class="num">1</div>
+              <h4>Kickoff (new projects)</h4>
+              <p>
+                Use a memory-backed agent (ChatGPT/Claude Projects, long-running agent, etc.) to write high-quality
+                <code>docs/*</code> + <code>specs/*</code> as a patch. Ralph consumes those.
+              </p>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <h4>Plan (specs → checklist)</h4>
+              <p>
+                Planning mode does gap analysis: compare specs to code, then update <code>IMPLEMENTATION_PLAN.md</code>
+                with prioritized tasks + required tests.
+              </p>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <h4>Build (tasks → code + backpressure)</h4>
+              <p>
+                Building mode picks the top task, searches first (don’t assume), implements with tests, and updates
+                plan/status/changelog.
+              </p>
+            </div>
+          </div>
+
+          <div class="callout">
+            <b>Full-auto ≠ reckless:</b> in auto-permissions mode, the agent can run arbitrary commands.
+            Run in a dedicated VM/container. Treat the environment as disposable.
+            See <a class="underline" href="docs/sandboxing.md">docs/sandboxing.md</a>.
+          </div>
+        </section>
+
+        <section id="use">
+          <div class="sectionhead">
+            <h2>How to use it</h2>
+            <p>
+              Two common paths: start a new repo from scratch (kickoff + plan + build), or augment an existing repo
+              (specs + plan + build).
+            </p>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Use cases">
+            <button class="tab" role="tab" aria-selected="true" aria-controls="panel-new" id="tab-new">
+              New project
+            </button>
+            <button class="tab" role="tab" aria-selected="false" aria-controls="panel-existing" id="tab-existing">
+              Existing repo
+            </button>
+          </div>
+
+          <div class="tabpanels">
+            <div class="panelbox" id="panel-new" role="tabpanel" aria-labelledby="tab-new">
+              <h3>New project (greenfield)</h3>
+              <ul>
+                <li>
+                  Install kit + wrapper:
+                  <div class="code" style="margin-top: 8px">
+                    <button class="copy" data-copy="#cmd-new-install">Copy</button>
+                    <pre id="cmd-new-install">./install.sh /path/to/your/new-repo --wrapper
+cd /path/to/your/new-repo</pre>
+                  </div>
+                </li>
+                <li>
+                  Generate a kickoff prompt (paste into your memory-backed agent):
+                  <div class="code" style="margin-top: 8px">
+                    <button class="copy" data-copy="#cmd-kickoff">Copy</button>
+                    <pre id="cmd-kickoff">./ralph.sh kickoff "&lt;one paragraph project brief&gt;"</pre>
+                  </div>
+                </li>
+                <li>
+                  Apply the patch your memory-backed agent returns (creates <code>docs/*</code>, <code>specs/*</code>, and
+                  a solid plan). Then run:
+                  <div class="code" style="margin-top: 8px">
+                    <button class="copy" data-copy="#cmd-new-run">Copy</button>
+                    <pre id="cmd-new-run">./ralph.sh plan 1
+./ralph.sh build 10</pre>
+                  </div>
+                </li>
+              </ul>
+              <p style="margin-top: 10px; color: var(--ink-2); font-size: 14px">
+                Read the full kickoff workflow: <a class="underline" href="docs/kickoff.md">docs/kickoff.md</a>
+              </p>
+            </div>
+
+            <div
+              class="panelbox"
+              id="panel-existing"
+              role="tabpanel"
+              aria-labelledby="tab-existing"
+              hidden
+            >
+              <h3>Existing repo (augmentation)</h3>
+              <ul>
+                <li>
+                  Install kit + wrapper:
+                  <div class="code" style="margin-top: 8px">
+                    <button class="copy" data-copy="#cmd-old-install">Copy</button>
+                    <pre id="cmd-old-install">./install.sh /path/to/existing-repo --wrapper
+cd /path/to/existing-repo</pre>
+                  </div>
+                </li>
+                <li>
+                  Write/curate specs for the system you want (3–8 files is a great start). Then run planning:
+                  <div class="code" style="margin-top: 8px">
+                    <button class="copy" data-copy="#cmd-old-plan">Copy</button>
+                    <pre id="cmd-old-plan">./ralph.sh plan 1</pre>
+                  </div>
+                </li>
+                <li>
+                  Build in loops with backpressure:
+                  <div class="code" style="margin-top: 8px">
+                    <button class="copy" data-copy="#cmd-old-build">Copy</button>
+                    <pre id="cmd-old-build">./ralph.sh build 10</pre>
+                  </div>
+                </li>
+              </ul>
+              <p style="margin-top: 10px; color: var(--ink-2); font-size: 14px">
+                Tip: use <code>plan-work</code> on a work branch when you want a scoped plan:
+                <code style="font-family: var(--font-mono)">./ralph/bin/loop.sh plan-work "scope"</code>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="provision">
+          <div class="sectionhead">
+            <h2>Provision a Ralph-equipped VM (GCP)</h2>
+            <p>
+              The whole point: run full-auto without giving an agent access to your personal machine.
+              Provision a dedicated runner VM, then clone your repo and loop.
+            </p>
+          </div>
+
+          <div class="grid">
+            <div class="card" style="grid-column: span 7">
+              <h3>One command</h3>
+              <p>
+                Requires <code>gcloud</code> on your laptop. Uploads the kit to the VM, installs Node/pnpm + agent CLIs
+                (best-effort), and stores keys in <code>/etc/ralph/keys.env</code>.
+              </p>
+              <div class="code" style="margin-top: 12px">
+                <button class="copy" data-copy="#cmd-provision">Copy</button>
+                <pre id="cmd-provision">OPENAI_API_KEY=... ANTHROPIC_API_KEY=... \
+  ops/gcp/provision.sh --name ralph-runner --project &lt;gcp-project&gt; --zone us-central1-a</pre>
+              </div>
+              <div class="callout" style="margin-top: 12px">
+                <b>Security:</b> treat runners as disposable. Use least-privilege tokens.
+                Never put personal SSH keys or browser cookies on the VM.
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: span 5">
+              <h3>After it’s up</h3>
+              <p>SSH in, clone your target repo, install the kit, and run loops in <code>tmux</code>.</p>
+              <div class="code" style="margin-top: 12px">
+                <button class="copy" data-copy="#cmd-after">Copy</button>
+                <pre id="cmd-after">gcloud compute ssh ralph-runner --project &lt;gcp-project&gt; --zone us-central1-a
+
+mkdir -p ~/work && cd ~/work
+git clone &lt;your-repo-url&gt; repo
+/opt/ralph-kit/install.sh ~/work/repo --wrapper
+
+cd ~/work/repo
+./ralph.sh plan 1
+./ralph.sh build 10</pre>
+              </div>
+            </div>
+          </div>
+
+          <p style="margin-top: 12px; color: var(--ink-2); font-size: 14px">
+            More details: <a class="underline" href="ops/gcp/README.md">ops/gcp/README.md</a> and
+            <a class="underline" href="docs/sandboxing.md">docs/sandboxing.md</a>
+          </p>
+        </section>
+
+        <footer>
+          <div class="footergrid">
+            <div>
+              <div style="font-family: var(--font-display); letter-spacing: -0.02em">Ralph Kit</div>
+              <div style="margin-top: 6px">
+                Inspired by Geoff Huntley’s Ralph methodology — “deterministically bad in an undeterministic world.”
+                This is a tooling kit, not a magic wand.
+              </div>
+            </div>
+            <div class="links" aria-label="Footer links">
+              <a class="pill" href="https://ghuntley.com/ralph/" target="_blank" rel="noreferrer"
+                ><span class="dot"></span>Methodology</a
+              >
+              <a
+                class="pill"
+                href="https://github.com/ghuntley/how-to-ralph-wiggum"
+                target="_blank"
+                rel="noreferrer"
+                ><span class="dot"></span>Playbook</a
+              >
+              <a class="pill" href="https://github.com/zakelfassi/Ralph-Kit" target="_blank" rel="noreferrer"
+                ><span class="dot"></span>Repo</a
+              >
+            </div>
+          </div>
+        </footer>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        // Tabs
+        const tabs = Array.from(document.querySelectorAll(".tab"));
+        const panels = {
+          new: document.getElementById("panel-new"),
+          existing: document.getElementById("panel-existing"),
+        };
+
+        function select(which) {
+          const isNew = which === "new";
+          document.getElementById("tab-new").setAttribute("aria-selected", String(isNew));
+          document.getElementById("tab-existing").setAttribute("aria-selected", String(!isNew));
+          panels.new.hidden = !isNew;
+          panels.existing.hidden = isNew;
+        }
+
+        document.getElementById("tab-new").addEventListener("click", () => select("new"));
+        document.getElementById("tab-existing").addEventListener("click", () => select("existing"));
+
+        // Copy
+        async function copyText(text) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (_) {
+            return false;
+          }
+        }
+
+        const copyButtons = Array.from(document.querySelectorAll("button.copy"));
+        copyButtons.forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const sel = btn.getAttribute("data-copy");
+            if (!sel) return;
+            const el = document.querySelector(sel);
+            if (!el) return;
+
+            const ok = await copyText(el.textContent || "");
+            const original = btn.textContent;
+            btn.textContent = ok ? "Copied" : "Copy failed";
+            setTimeout(() => {
+              btn.textContent = original;
+            }, 900);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
