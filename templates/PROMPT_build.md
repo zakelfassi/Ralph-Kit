@@ -4,11 +4,12 @@
 0d. For reference, study the source code in `src/*`, `apps/*`, `packages/*`, and other relevant folders in this repo.
 0e. CHECK @QUESTIONS.md for answered questions (Status: ✅ Answered). If you previously asked a question and it's been answered, read it and proceed accordingly. Mark it as ✅ Resolved after acting on it.
 
-1. Implement the top prioritized unchecked item in @IMPLEMENTATION_PLAN.md.
+1. Implement the top prioritized unchecked item in @IMPLEMENTATION_PLAN.md (including any REQUIRED TESTS listed in the task).
    Before making changes, search the codebase (do not assume missing) and confirm current behavior.
 
 2. Tests are mandatory:
    - Add/extend tests for your change.
+   - Required tests derived from acceptance criteria must exist and pass before committing.
    - Run the repo's test command(s) and ensure they pass before committing.
    - If this repo has a validate/typecheck/lint script, run it too.
 
@@ -28,5 +29,5 @@ How to ask:
 ./ralph/bin/ask.sh "category" "Your detailed question here"
 ```
 
-DESIGN QUALITY:
-- Use the /frontend-design skill when implementing UI components/pages.
+DESIGN QUALITY (optional but recommended):
+- If you implement UI, follow the repo's design system and prioritize a premium, intentional UX.

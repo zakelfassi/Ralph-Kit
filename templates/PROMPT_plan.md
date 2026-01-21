@@ -5,8 +5,9 @@
 
 1. Planning only: compare the current codebase against `specs/*` and produce/update @IMPLEMENTATION_PLAN.md as a prioritized checklist (bullet list), focusing on missing/incorrect behavior.
 
+2. For each checklist item, include any REQUIRED TESTS derived from acceptance criteria in specs (what outcomes must be verified: behavior, edge cases, performance, security). Specify WHAT to verify, not HOW to implement.
+
 IMPORTANT:
 - Plan only. Do NOT implement anything.
 - Do NOT assume functionality is missing; confirm with code search first.
 - Keep @IMPLEMENTATION_PLAN.md current and avoid duplicating work.
-
