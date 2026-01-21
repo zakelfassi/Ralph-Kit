@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["approved", "needs_fixes"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string" },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "file": { "type": "string" },
+          "description": { "type": "string" },
+          "fix": { "type": "string" }
+        },
+        "required": ["title", "severity", "description"]
+      }
+    }
+  },
+  "required": ["verdict", "confidence", "findings"]
+}
+
