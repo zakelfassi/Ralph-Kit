@@ -1,35 +1,17 @@
 # Ralph Kit
 
-Ralph Kit is a portable **implementation + augmentation** of the workflow described in **The Ralph Playbook**.
+Ralph Kit is a portable **implementation + augmentation** of the Ralph workflow, packaged so you can drop it into any repo.
 
-- Playbook (how/why): https://github.com/ghuntley/how-to-ralph-wiggum
+In plain English, Ralph is a loop that:
+1. **Kickoff** (optional): write clear docs/specs for a new project.
+2. **Plan**: translate specs into a prioritized, test-aware task list.
+3. **Build**: execute tasks with backpressure (tests/typecheck/lint), updating plan/status as you go.
+
+Ralph Kit adds the scaffolding, prompts, and tooling to make that loop repeatable in real codebases.
+
+- Playbook (background): https://github.com/ghuntley/how-to-ralph-wiggum
 - This repo (do/ship): scripts + markdown templates you can apply to any codebase.
 - Landing page: https://ralphkit.zakelfassi.com
-
-## Landing page (GitHub Pages)
-
-This repo includes a static landing page at `index.html`.
-
-To publish it:
-
-1. On GitHub: `Settings` → `Pages`
-2. Source: `Deploy from a branch`
-3. Branch: `main` and Folder: `/ (root)`
-4. Save and wait for the Pages URL to appear.
-
-Live URL: https://ralphkit.zakelfassi.com  
-(For forks: `https://<your-user>.github.io/<your-repo>/`.)
-
-### Custom domain
-
-To use `ralphkit.zakelfassi.com`:
-
-1. Add a DNS `CNAME` record: `ralphkit` → `zakelfassi.github.io`
-2. On GitHub: `Settings` → `Pages` → `Custom domain` → `ralphkit.zakelfassi.com`
-3. Enable `Enforce HTTPS` once the certificate is issued.
-
-The default GitHub Pages URL will remain available but typically redirects to the custom domain.
-
 
 ## What it adds (augmentations)
 - **Portable kit** vendorable as `ralph/` into any repo
@@ -41,6 +23,22 @@ The default GitHub Pages URL will remain available but typically redirects to th
 - **Optional Slack loop**: `ask.sh` + `QUESTIONS.md`, `notify.sh`
 - **Optional daemon** with `[PAUSE]`, `[REPLAN]`, `[DEPLOY]` triggers in `REQUESTS.md`
 - **Optional structured review/security gate** via JSON schemas
+
+## Quickstart (new or existing repo)
+
+Install the kit:
+```bash
+./install.sh /path/to/target-repo --wrapper
+```
+
+Then run a loop in the target repo:
+```bash
+cd /path/to/target-repo
+./ralph.sh plan 1
+./ralph.sh build 10
+```
+
+If you’re starting from scratch, run a kickoff to generate docs/specs first (see below).
 
 ## Install into another repo
 

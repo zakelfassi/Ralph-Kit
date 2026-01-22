@@ -972,9 +972,9 @@
             </h2>
 
             <p class="lead">
-              Ralph Kit is a portable implementation + augmentation of Geoff Huntley’s Ralph methodology.
-              It adds a repeatable kickoff flow for new projects, multi-model routing, and one-command GCP
-              provisioning so you can run full-auto safely in a dedicated VM.
+              Ralph Kit is a portable workflow for AI-assisted development. It installs prompts + templates
+              and gives you a repeatable loop: <b>kickoff</b> (optional) → <b>plan</b> (specs to tasks) → <b>build</b>
+              (tasks to code with backpressure from tests).
             </p>
 
             <div class="ctas">
@@ -1008,7 +1008,7 @@
             <div class="panel" style="margin-top: 14px">
               <h3>Source material</h3>
               <p>
-                This kit is built to operationalize the playbook + methodology.
+                If you want the deeper theory, these are the original sources.
               </p>
               <div class="chiprow" role="list">
                 <a class="chip" role="listitem" href="https://ghuntley.com/ralph/" target="_blank" rel="noreferrer"
@@ -1031,8 +1031,8 @@
               <div class="card" style="grid-column: span 4">
                 <h3>What it adds</h3>
                 <p>
-                  The classic Ralph loop is tiny: <code>while :; do cat PROMPT.md | claude; done</code>. Ralph Kit keeps
-                  the simplicity, but adds the missing ergonomics and guardrails you actually want in a repo.
+                  The core loop can be as small as “feed a prompt to an agent, repeat.” Ralph Kit keeps that simplicity
+                  while adding structure: specs/templates, planning files, safer defaults, and a repeatable runtime.
                 </p>
                 <div class="chiprow" role="list">
                   <span class="chip" role="listitem"><span class="tag"></span><span>plan-work</span></span>
@@ -1047,6 +1047,7 @@
                 <h3>Quick install</h3>
                 <p>
                   Install the kit into any repo (writes docs + prompts + a wrapper), then run planning/build loops.
+                  You’ll get a consistent file layout + prompts.
                 </p>
                 <div class="code" style="margin-top: 20px">
                   <button class="copy" data-copy="#cmd-install">Copy</button>
@@ -1065,8 +1066,8 @@ cd "$REPO"
           <div class="sectionhead">
             <h2>How it works</h2>
             <p>
-              Ralph is a funnel: <b>kickoff</b> (optional, for greenfield) → <b>planning</b> (specs → plan) → <b>building</b>
-              (plan → code + tests). Ralph Kit makes this repeatable.
+              Ralph is a simple loop: <b>kickoff</b> (optional) → <b>planning</b> (specs → tasks) → <b>building</b>
+              (tasks → code + tests). Ralph Kit makes the loop reliable and copy/pasteable.
             </p>
           </div>
 
@@ -1075,24 +1076,24 @@ cd "$REPO"
               <div class="num">1</div>
               <h4>Kickoff (new projects)</h4>
               <p>
-                Use a memory-backed agent (ChatGPT/Claude Projects, long-running agent, etc.) to write high-quality
-                <code>docs/*</code> + <code>specs/*</code> as a patch. Ralph consumes those.
+                Use a memory-backed agent (ChatGPT/Claude Projects, long-running agent, etc.) to draft
+                <code>docs/*</code> + <code>specs/*</code>. Ralph then plans from those artifacts.
               </p>
             </div>
             <div class="step">
               <div class="num">2</div>
               <h4>Plan (specs → checklist)</h4>
               <p>
-                Planning mode does gap analysis: compare specs to code, then update <code>IMPLEMENTATION_PLAN.md</code>
-                with prioritized tasks + required tests.
+                Planning mode compares specs to code, then writes a prioritized checklist to
+                <code>IMPLEMENTATION_PLAN.md</code> with test expectations.
               </p>
             </div>
             <div class="step">
               <div class="num">3</div>
               <h4>Build (tasks → code + backpressure)</h4>
               <p>
-                Building mode picks the top task, searches first (don’t assume), implements with tests, and updates
-                plan/status/changelog.
+                Building mode executes the next task, runs tests, and updates plan/status/changelog so progress stays
+                visible and bounded.
               </p>
             </div>
           </div>
@@ -1169,7 +1170,7 @@ cd "$REPO"
             <h2>How to use it</h2>
             <p>
               Two common paths: start a new repo from scratch (kickoff + plan + build), or augment an existing repo
-              (specs + plan + build).
+              (specs + plan + build). Either way, the loop is the same.
             </p>
           </div>
 
