@@ -140,10 +140,12 @@ Usage:
   ./ralph.sh plan [max_iters]
   ./ralph.sh plan-work "scope" [max_iters]
   ./ralph.sh build [max_iters]
+  ./ralph.sh tasks [max_iters]
   ./ralph.sh review
   ./ralph.sh daemon [interval_seconds]
   ./ralph.sh ask "category" "question"
   ./ralph.sh notify "emoji" "title" "message"
+  ./ralph.sh ingest --report <file> [--mode request|plan-work]
   ./ralph.sh kickoff "<brief>" [--project <name>] [--seed <path-or-url>] [--notes <text>] [--out <path>]
 USAGE
 }
@@ -163,6 +165,9 @@ case "$cmd" in
   review)
     exec "$REPO_DIR/ralph/bin/loop.sh" review
     ;;
+  tasks)
+    exec "$REPO_DIR/ralph/bin/loop-tasks.sh" "${2:-10}"
+    ;;
   daemon)
     exec "$REPO_DIR/ralph/bin/ralph-daemon.sh" "${2:-300}"
     ;;
@@ -177,6 +182,10 @@ case "$cmd" in
   kickoff)
     shift
     exec "$REPO_DIR/ralph/bin/kickoff.sh" "$@"
+    ;;
+  ingest)
+    shift
+    exec "$REPO_DIR/ralph/bin/ingest-report.sh" "$@"
     ;;
   ""|-h|--help)
     usage

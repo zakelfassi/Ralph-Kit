@@ -1,0 +1,30 @@
+# Ralph Tasks Progress Log
+Started: [DATE]
+Branch: [BRANCH_NAME]
+---
+
+## Codebase Patterns
+<!-- Add discovered patterns here as you work -->
+<!-- Example: -->
+<!-- - Components use functional style with hooks -->
+<!-- - API calls go through src/lib/api.ts -->
+<!-- - Tests are co-located with components -->
+
+---
+
+## Progress
+
+### [TASK_ID] - [TASK_TITLE]
+**Started:** [TIMESTAMP]
+**Status:** [in_progress | completed | blocked]
+
+**What changed:**
+- [List of changes made]
+
+**Learnings:**
+- [Patterns discovered, gotchas encountered]
+
+**Next:**
+- [What to do next if incomplete]
+
+---

@@ -1,0 +1,50 @@
+{
+  "project": "MyProject",
+  "branchName": "ralph/feature-name",
+  "description": "Brief description of the feature being built",
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "First task title",
+      "description": "As a developer, I need to implement X so that Y.",
+      "acceptanceCriteria": [
+        "Specific, verifiable criterion 1",
+        "Specific, verifiable criterion 2",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "T-002",
+      "title": "Second task title",
+      "description": "As a user, I want to see X so that I can Y.",
+      "acceptanceCriteria": [
+        "UI element visible without interaction",
+        "Correct styling applied",
+        "Typecheck passes",
+        "Verify in browser"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "T-003",
+      "title": "Third task title",
+      "description": "As a user, I want to do X so that Y happens.",
+      "acceptanceCriteria": [
+        "Action triggers expected behavior",
+        "State updates correctly",
+        "Typecheck passes",
+        "Tests pass",
+        "Verify in browser"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
