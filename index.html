@@ -26,6 +26,21 @@
       href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Literata:opsz,wght@7..72,400;7..72,600&family=JetBrains+Mono:wght@400;600&display=swap"
       rel="stylesheet"
     />
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+          primaryColor: '#1fe38b',
+          primaryTextColor: '#0b0f14',
+          primaryBorderColor: '#0b0f14',
+          lineColor: '#0b0f14',
+          secondaryColor: '#5b66ff',
+          tertiaryColor: '#fbf7f0'
+        }
+      });
+    </script>
 
     <style>
       :root {
@@ -766,6 +781,60 @@
         color: var(--ink);
       }
 
+      .mermaid-wrap {
+        margin-top: 14px;
+        border-radius: var(--radius);
+        background: rgba(255, 253, 248, 0.88);
+        border: 1px solid rgba(11, 15, 20, 0.12);
+        box-shadow: var(--shadow-tight);
+        padding: 20px;
+        overflow-x: auto;
+      }
+
+      .mermaid {
+        display: flex;
+        justify-content: center;
+      }
+
+      .compare-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 13px;
+      }
+
+      .compare-table th,
+      .compare-table td {
+        padding: 10px 12px;
+        text-align: left;
+        border: 1px solid rgba(11, 15, 20, 0.12);
+      }
+
+      .compare-table th {
+        background: rgba(31, 227, 139, 0.12);
+        font-family: var(--font-display);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .compare-table td {
+        background: rgba(255, 253, 248, 0.6);
+        font-family: var(--font-mono);
+        font-size: 11px;
+      }
+
+      .compare-table td:first-child {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .compare-table tr:hover td {
+        background: rgba(31, 227, 139, 0.06);
+      }
+
       footer {
         margin-top: 38px;
         padding: 22px 0 10px;
@@ -1031,7 +1100,7 @@
               <div class="card" style="grid-column: span 4">
                 <h3>What it adds</h3>
                 <p>
-                  The core loop can be as small as “feed a prompt to an agent, repeat.” Ralph Kit keeps that simplicity
+                  The core loop can be as small as "feed a prompt to an agent, repeat." Ralph Kit keeps that simplicity
                   while adding structure: specs/templates, planning files, safer defaults, and a repeatable runtime.
                 </p>
                 <div class="chiprow" role="list">
@@ -1040,6 +1109,10 @@
                   <span class="chip" role="listitem"><span class="tag"></span><span>GCP provisioner</span></span>
                   <span class="chip pink" role="listitem"><span class="tag"></span><span>kickoff prompt</span></span>
                   <span class="chip" role="listitem"><span class="tag"></span><span>.ralph runtime</span></span>
+                  <span class="chip blue" role="listitem"><span class="tag"></span><span>tasks lane</span></span>
+                  <span class="chip pink" role="listitem"><span class="tag"></span><span>report ingestion</span></span>
+                  <span class="chip" role="listitem"><span class="tag"></span><span>shared libraries</span></span>
+                  <span class="chip blue" role="listitem"><span class="tag"></span><span>installable skills</span></span>
                 </div>
               </div>
 
@@ -1047,15 +1120,16 @@
                 <h3>Quick install</h3>
                 <p>
                   Install the kit into any repo (writes docs + prompts + a wrapper), then run planning/build loops.
-                  You’ll get a consistent file layout + prompts.
+                  You'll get a consistent file layout + prompts.
                 </p>
                 <div class="code" style="margin-top: 20px">
                   <button class="copy" data-copy="#cmd-install">Copy</button>
                   <pre id="cmd-install">REPO=/path/to/target-repo
-./install.sh "$REPO" --wrapper
+./install.sh "$REPO" --wrapper --skills
 cd "$REPO"
 ./ralph.sh plan 1
-./ralph.sh build 10</pre>
+./ralph.sh build 10
+# Or use tasks lane: ./ralph.sh tasks 10</pre>
                 </div>
               </div>
             </div>
@@ -1071,7 +1145,46 @@ cd "$REPO"
             </p>
           </div>
 
-          <div class="how">
+          <div class="mermaid-wrap">
+            <pre class="mermaid">
+flowchart LR
+    subgraph KICKOFF["1. KICKOFF (optional)"]
+        K1[Memory-backed agent]
+        K2[docs/* + specs/*]
+        K1 --> K2
+    end
+
+    subgraph PLAN["2. PLAN"]
+        P1[Compare specs to code]
+        P2[IMPLEMENTATION_PLAN.md<br/>or prd.json]
+        P1 --> P2
+    end
+
+    subgraph BUILD["3. BUILD"]
+        B1[Execute task]
+        B2[Run tests/lint/types]
+        B3{Pass?}
+        B4[Next task]
+        B5[Retry task]
+        B1 --> B2
+        B2 --> B3
+        B3 -->|Yes| B4
+        B3 -->|No| B5
+        B5 -->|Backpressure| B1
+        B4 --> B1
+    end
+
+    KICKOFF --> PLAN
+    PLAN --> BUILD
+            </pre>
+          </div>
+
+          <div class="callout" style="margin-top: 14px">
+            <b>Daemon mode:</b> Optionally run <code>./ralph.sh daemon 300</code> to watch git + REQUESTS.md and run loops automatically.
+            Control with <code>[PAUSE]</code>, <code>[REPLAN]</code>, <code>[DEPLOY]</code> flags.
+          </div>
+
+          <div class="how" style="margin-top: 14px">
             <div class="step">
               <div class="num">1</div>
               <h4>Kickoff (new projects)</h4>
@@ -1080,7 +1193,7 @@ cd "$REPO"
                 <code>docs/*</code> + <code>specs/*</code>. Ralph then plans from those artifacts.
               </p>
             </div>
-            <div class="step">
+            <div class="step" style="position: relative">
               <div class="num">2</div>
               <h4>Plan (specs → checklist)</h4>
               <p>
@@ -1092,8 +1205,8 @@ cd "$REPO"
               <div class="num">3</div>
               <h4>Build (tasks → code + backpressure)</h4>
               <p>
-                Building mode executes the next task, runs tests, and updates plan/status/changelog so progress stays
-                visible and bounded.
+                Building mode executes the next task, runs tests, and updates plan/status/changelog. Failures trigger
+                retries — that's backpressure steering the agent.
               </p>
             </div>
           </div>
@@ -1102,6 +1215,90 @@ cd "$REPO"
             <b>Full-auto ≠ reckless:</b> in auto-permissions mode, the agent can run arbitrary commands.
             Run in a dedicated VM/container. Treat the environment as disposable.
             See <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>.
+          </div>
+        </section>
+
+        <section id="lanes">
+          <div class="sectionhead">
+            <h2>Two Workflow Lanes</h2>
+            <p>
+              Ralph Kit supports two approaches to task tracking. Pick based on your workflow: human-in-the-loop vs full automation.
+            </p>
+          </div>
+
+          <div class="grid" style="margin-top: 14px">
+            <div class="card" style="grid-column: span 6">
+              <h3>Checklist Lane (default)</h3>
+              <p>
+                Uses <code>IMPLEMENTATION_PLAN.md</code> with markdown checkboxes. Best for human-in-the-loop workflows
+                where you want to review and modify the plan.
+              </p>
+              <div class="code" style="margin-top: 12px">
+                <button class="copy" data-copy="#lane-checklist">Copy</button>
+                <pre id="lane-checklist">./ralph.sh plan 1
+./ralph.sh build 10</pre>
+              </div>
+              <div class="chiprow" role="list">
+                <span class="chip" role="listitem"><span class="tag"></span><span>human-readable</span></span>
+                <span class="chip blue" role="listitem"><span class="tag"></span><span>editable</span></span>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: span 6">
+              <h3>Tasks Lane (optional)</h3>
+              <p>
+                Uses <code>prd.json</code> with machine-readable <code>passes: true/false</code> flags. Best for full automation
+                with structured task definitions.
+              </p>
+              <div class="code" style="margin-top: 12px">
+                <button class="copy" data-copy="#lane-tasks">Copy</button>
+                <pre id="lane-tasks">./ralph.sh tasks 10</pre>
+              </div>
+              <div class="chiprow" role="list">
+                <span class="chip pink" role="listitem"><span class="tag"></span><span>machine-readable</span></span>
+                <span class="chip" role="listitem"><span class="tag"></span><span>progress.txt</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panelbox" style="margin-top: 14px">
+            <h3>Comparison</h3>
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Checklist Lane</th>
+                  <th>Tasks Lane</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Task file</td>
+                  <td>IMPLEMENTATION_PLAN.md</td>
+                  <td>prd.json</td>
+                </tr>
+                <tr>
+                  <td>Progress</td>
+                  <td>Markdown checkboxes</td>
+                  <td>passes: true/false</td>
+                </tr>
+                <tr>
+                  <td>Run command</td>
+                  <td>./ralph.sh build N</td>
+                  <td>./ralph.sh tasks N</td>
+                </tr>
+                <tr>
+                  <td>Best for</td>
+                  <td>Human review/edits</td>
+                  <td>Full automation</td>
+                </tr>
+                <tr>
+                  <td>Tracking</td>
+                  <td>STATUS.md</td>
+                  <td>progress.txt</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -1127,11 +1324,14 @@ cd "$REPO"
 ├─ PROMPT_plan.md
 ├─ PROMPT_plan_work.md
 ├─ PROMPT_build.md
+├─ PROMPT_tasks.md          # Tasks lane prompt
 ├─ IMPLEMENTATION_PLAN.md
 ├─ REQUESTS.md
 ├─ QUESTIONS.md
 ├─ STATUS.md
 ├─ CHANGELOG.md
+├─ prd.json                 # (optional) Tasks lane task file
+├─ progress.txt             # (optional) Tasks lane progress
 ├─ specs/
 │  ├─ feature_template.md
 │  └─ ...
@@ -1139,9 +1339,18 @@ cd "$REPO"
 │  ├─ README.md
 │  └─ ...
 └─ ralph/
-   ├─ bin/loop.sh
-   ├─ bin/ralph-daemon.sh
-   ├─ bin/kickoff.sh
+   ├─ bin/
+   │  ├─ loop.sh            # Main build loop
+   │  ├─ loop-tasks.sh      # Tasks lane loop
+   │  ├─ ralph-daemon.sh    # Daemon mode
+   │  ├─ ingest-report.sh   # Report ingestion
+   │  └─ kickoff.sh         # Kickoff helper
+   ├─ lib/
+   │  ├─ core.sh            # Logging, notifications, git helpers
+   │  └─ llm.sh             # LLM routing with failover
+   ├─ skills/
+   │  ├─ prd/SKILL.md       # PRD generation skill
+   │  └─ tasks/SKILL.md     # Tasks conversion skill
    ├─ config.sh
    └─ ...</pre>
               </div>

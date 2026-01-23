@@ -9,7 +9,7 @@ Treat the **sandbox/VM/container** as your security boundary.
 ## What “full-auto” means in this kit
 
 - Claude Code (`claude`) runs with `--dangerously-skip-permissions` (auto-approve tool calls).
-- Codex CLI (`codex`) runs with `--full-auto` and `--sandbox danger-full-access` (full access inside the sandbox).
+- Codex CLI (`codex`) runs with `--dangerously-bypass-approvals-and-sandbox` (no sandbox; use only in isolated runners).
 
 You can override these via environment variables (see `ralph/config.sh` after install, or export `CLAUDE_FLAGS` / `CODEX_FLAGS`).
 
