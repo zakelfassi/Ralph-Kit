@@ -6,11 +6,11 @@ usage() {
 Ralph framework installer.
 
 Usage:
-  ./install.sh [target_repo_dir] [--force] [--wrapper]
+  ./install.sh [target_repo_dir] [--force] [--wrapper] [--skills]
 
 Examples:
   # From the ralph-kit repo:
-  ./install.sh /path/to/target-repo --wrapper
+  ./install.sh /path/to/target-repo --wrapper --skills
 
   # From within a target repo where this kit is vendored at ./ralph:
   ./ralph/install.sh --wrapper
@@ -18,6 +18,7 @@ Examples:
 Flags:
   --force     Overwrite existing files
   --wrapper   Create ./ralph.sh convenience wrapper
+  --skills    Install skills to user agent directories (~/.claude/skills, ~/.codex/skills, etc.)
 USAGE
 }
 
@@ -26,6 +27,7 @@ SRC_KIT_NAME="$(basename "$SRC_KIT_DIR")"
 
 FORCE="false"
 WRAPPER="false"
+SKILLS="false"
 
 # Default target:
 # - If this installer lives in a folder named "ralph", assume it's vendored into a repo at ./ralph and
@@ -48,6 +50,10 @@ while [ $# -gt 0 ]; do
             ;;
         --wrapper)
             WRAPPER="true"
+            shift
+            ;;
+        --skills)
+            SKILLS="true"
             shift
             ;;
         *)
@@ -118,6 +124,49 @@ ensure_gitignore() {
     echo "" >> "$gitignore"
     echo "$line" >> "$gitignore"
     echo "update: $gitignore (+$line)"
+}
+
+install_skills() {
+    local skills_src="$SRC_KIT_DIR/skills"
+
+    if [ ! -d "$skills_src" ]; then
+        echo "skip: skills directory not found in kit"
+        return 0
+    fi
+
+    # Agent directories to install skills into
+    local agent_dirs=(
+        "$HOME/.claude/skills"
+        "$HOME/.codex/skills"
+        "$HOME/.config/amp/skills"
+    )
+
+    for agent_dir in "${agent_dirs[@]}"; do
+        # Skip if parent dir doesn't exist (agent not installed)
+        local parent_dir
+        parent_dir="$(dirname "$agent_dir")"
+        if [ ! -d "$parent_dir" ]; then
+            continue
+        fi
+
+        mkdir -p "$agent_dir"
+
+        # Copy each skill
+        for skill_dir in "$skills_src"/*/; do
+            local skill_name
+            skill_name="$(basename "$skill_dir")"
+            local dest_skill_dir="$agent_dir/ralph-$skill_name"
+
+            if [ -e "$dest_skill_dir" ] && [ "$FORCE" != "true" ]; then
+                echo "skip: $dest_skill_dir (exists)"
+                continue
+            fi
+
+            mkdir -p "$dest_skill_dir"
+            cp "$skill_dir/SKILL.md" "$dest_skill_dir/SKILL.md"
+            echo "write: $dest_skill_dir/SKILL.md"
+        done
+    done
 }
 
 install_wrapper() {
@@ -232,6 +281,10 @@ main() {
 
     if [ "$WRAPPER" = "true" ]; then
         install_wrapper
+    fi
+
+    if [ "$SKILLS" = "true" ]; then
+        install_skills
     fi
 
     echo "Done."
