@@ -452,7 +452,8 @@ main() {
     if [[ -n "$LOG_FILE_PATH" ]]; then
         LOG_FILE_PATH=$(resolve_file_path "$LOG_FILE_PATH")
         source_label="${SOURCE_LABEL:-file:$LOG_FILE_PATH}"
-        cat "$LOG_FILE_PATH" > "$tmp_raw"
+        # Avoid reading the full file into memory/disk: sample directly.
+        tail -n "$TAIL_LINES" "$LOG_FILE_PATH" > "$tmp_sample"
     elif [[ -n "$LOGS_CMD" ]]; then
         source_label="${SOURCE_LABEL:-cmd}"
         cmd_exit_code=$(collect_cmd_output "$LOGS_CMD" "$tmp_raw")
@@ -469,7 +470,9 @@ main() {
         cat > "$tmp_raw"
     fi
 
-    sample_logs "$tmp_raw" "$tmp_sample"
+    if [[ -s "$tmp_raw" ]]; then
+        sample_logs "$tmp_raw" "$tmp_sample"
+    fi
     redact_sensitive "$tmp_sample" "$tmp_redacted"
     truncate_chars "$tmp_redacted" "$tmp_final"
 
