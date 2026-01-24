@@ -31,8 +31,8 @@ flowchart LR
 
     subgraph BUILD["3. BUILD (with SDD preflight)"]
         S1{Should this become a Skill?}
-        S2[Forge/Update Skill<br/>(skillforge)]
-        S3[Sync skills<br/>(sync-skills)]
+        S2[Forge/Update Skill (skillforge)]
+        S3[Sync skills (sync-skills)]
         B1[Implement task]
         B2[Run tests/lint/types]
         B3{Pass?}
