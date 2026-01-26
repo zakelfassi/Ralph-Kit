@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Ralph LLM Library
+# Forgeloop LLM Library
 # =============================================================================
 # LLM execution functions: model routing, rate limiting, ai_exec, review/security gates.
 #
 # Usage:
-#   source "$REPO_DIR/ralph/lib/core.sh"  # Required dependency
-#   source "$REPO_DIR/ralph/lib/llm.sh"
+#   source "$REPO_DIR/forgeloop/lib/core.sh"  # Required dependency
+#   source "$REPO_DIR/forgeloop/lib/llm.sh"
 #
 # This library is side-effect-free on source.
-# All functions are namespaced with ralph_llm__ prefix.
+# All functions are namespaced with forgeloop_llm__ prefix.
 # =============================================================================
 
 # Prevent double-sourcing
-[[ -n "${_RALPH_LLM_LOADED:-}" ]] && return 0
-_RALPH_LLM_LOADED=1
+[[ -n "${_FORGELOOP_LLM_LOADED:-}" ]] && return 0
+_FORGELOOP_LLM_LOADED=1
 
 # Ensure core.sh is loaded
-if [[ -z "${_RALPH_CORE_LOADED:-}" ]]; then
-    echo "Error: ralph/lib/core.sh must be sourced before ralph/lib/llm.sh" >&2
+if [[ -z "${_FORGELOOP_CORE_LOADED:-}" ]]; then
+    echo "Error: forgeloop/lib/core.sh must be sourced before forgeloop/lib/llm.sh" >&2
     exit 1
 fi
 
@@ -59,8 +59,8 @@ AI_MODEL="${AI_MODEL:-$BUILD_MODEL}"
 # =============================================================================
 
 # Load LLM state from a file
-# Usage: ralph_llm__load_state "$STATE_FILE"
-ralph_llm__load_state() {
+# Usage: forgeloop_llm__load_state "$STATE_FILE"
+forgeloop_llm__load_state() {
     local state_file="$1"
     if [[ -f "$state_file" ]]; then
         # shellcheck disable=SC1090
@@ -72,8 +72,8 @@ ralph_llm__load_state() {
 }
 
 # Save LLM state to a file
-# Usage: ralph_llm__save_state "$STATE_FILE"
-ralph_llm__save_state() {
+# Usage: forgeloop_llm__save_state "$STATE_FILE"
+forgeloop_llm__save_state() {
     local state_file="$1"
     cat > "$state_file" << EOF
 AI_MODEL=$AI_MODEL
@@ -86,16 +86,16 @@ EOF
 # Model Detection
 # =============================================================================
 
-ralph_llm__has_claude() { command -v "$CLAUDE_CLI" &>/dev/null; }
-ralph_llm__has_codex() { command -v "$CODEX_CLI" &>/dev/null; }
+forgeloop_llm__has_claude() { command -v "$CLAUDE_CLI" &>/dev/null; }
+forgeloop_llm__has_codex() { command -v "$CODEX_CLI" &>/dev/null; }
 
 # =============================================================================
 # Rate Limiting
 # =============================================================================
 
 # Check if a model is currently rate limited
-# Usage: if ralph_llm__is_rate_limited "claude"; then ...
-ralph_llm__is_rate_limited() {
+# Usage: if forgeloop_llm__is_rate_limited "claude"; then ...
+forgeloop_llm__is_rate_limited() {
     local model="$1"
     local now
     now=$(date +%s)
@@ -108,8 +108,8 @@ ralph_llm__is_rate_limited() {
 }
 
 # Parse rate limit duration from output file
-# Usage: duration=$(ralph_llm__parse_rate_limit_duration "$output_file" "claude")
-ralph_llm__parse_rate_limit_duration() {
+# Usage: duration=$(forgeloop_llm__parse_rate_limit_duration "$output_file" "claude")
+forgeloop_llm__parse_rate_limit_duration() {
     local output_file="$1"
     local model="$2"
     local default_sleep=$((60 * 60))
@@ -155,8 +155,8 @@ ralph_llm__parse_rate_limit_duration() {
 # =============================================================================
 
 # Get the preferred model for a task type
-# Usage: model=$(ralph_llm__get_model_for_task "plan")
-ralph_llm__get_model_for_task() {
+# Usage: model=$(forgeloop_llm__get_model_for_task "plan")
+forgeloop_llm__get_model_for_task() {
     local task_type="${1:-build}"
 
     if [[ -n "${FORCE_MODEL:-}" ]]; then
@@ -177,8 +177,8 @@ ralph_llm__get_model_for_task() {
 }
 
 # Get Codex configuration for a task type
-# Usage: read -r model reasoning <<< "$(ralph_llm__get_codex_config_for_task "plan")"
-ralph_llm__get_codex_config_for_task() {
+# Usage: read -r model reasoning <<< "$(forgeloop_llm__get_codex_config_for_task "plan")"
+forgeloop_llm__get_codex_config_for_task() {
     local task_type="${1:-build}"
     local config=""
 
@@ -199,10 +199,10 @@ ralph_llm__get_codex_config_for_task() {
 # =============================================================================
 
 # Execute an LLM task with automatic failover and rate limit handling
-# Usage: ralph_llm__exec "$REPO_DIR" "$prompt_source" "$task_type" "$STATE_FILE" "$LOG_FILE"
+# Usage: forgeloop_llm__exec "$REPO_DIR" "$prompt_source" "$task_type" "$STATE_FILE" "$LOG_FILE"
 #   prompt_source: "file:PATH", "stdin", or literal prompt string
 #   task_type: plan, plan-work, review, security, build (default)
-ralph_llm__exec() {
+forgeloop_llm__exec() {
     local repo_dir="$1"
     local prompt_source="$2"
     local task_type="${3:-build}"
@@ -212,7 +212,7 @@ ralph_llm__exec() {
     local mode="${MODE:-build}"
 
     local preferred_model
-    preferred_model=$(ralph_llm__get_model_for_task "$task_type")
+    preferred_model=$(forgeloop_llm__get_model_for_task "$task_type")
     local model="$preferred_model"
     local output_file
     output_file=$(mktemp)
@@ -220,11 +220,11 @@ ralph_llm__exec() {
     local prompt_content=""
 
     # Check rate limiting and failover
-    if ralph_llm__is_rate_limited "$model" && [[ "$ENABLE_FAILOVER" = "true" ]]; then
+    if forgeloop_llm__is_rate_limited "$model" && [[ "$ENABLE_FAILOVER" = "true" ]]; then
         local alt_model
         if [[ "$model" = "claude" ]]; then alt_model="codex"; else alt_model="claude"; fi
-        if ! ralph_llm__is_rate_limited "$alt_model"; then
-            ralph_core__log "Preferred model ($model) rate-limited for $task_type, using $alt_model" "$log_file"
+        if ! forgeloop_llm__is_rate_limited "$alt_model"; then
+            forgeloop_core__log "Preferred model ($model) rate-limited for $task_type, using $alt_model" "$log_file"
             model="$alt_model"
         fi
     fi
@@ -246,21 +246,21 @@ ralph_llm__exec() {
     fi
 
     # Prepend optional session context (persistent knowledge + experts)
-    if [[ -n "${RALPH_SESSION_CONTEXT:-}" ]] && [[ -f "${RALPH_SESSION_CONTEXT:-}" ]]; then
-        prompt_content="$(cat "$RALPH_SESSION_CONTEXT")"$'\n\n'"$prompt_content"
+    if [[ -n "${FORGELOOP_SESSION_CONTEXT:-}" ]] && [[ -f "${FORGELOOP_SESSION_CONTEXT:-}" ]]; then
+        prompt_content="$(cat "$FORGELOOP_SESSION_CONTEXT")"$'\n\n'"$prompt_content"
     fi
 
-    ralph_core__log "Running task=$task_type with model=$model (preferred=$preferred_model)" "$log_file"
+    forgeloop_core__log "Running task=$task_type with model=$model (preferred=$preferred_model)" "$log_file"
 
     case "$model" in
         claude)
-            if ! ralph_llm__has_claude; then
-                if ralph_llm__has_codex; then
-                    ralph_core__log "Claude not available, forcing Codex..." "$log_file"
-                    FORCE_MODEL="codex" ralph_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
+            if ! forgeloop_llm__has_claude; then
+                if forgeloop_llm__has_codex; then
+                    forgeloop_core__log "Claude not available, forcing Codex..." "$log_file"
+                    FORCE_MODEL="codex" forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
                     return $?
                 fi
-                ralph_core__log "Neither Claude nor Codex is available" "$log_file"
+                forgeloop_core__log "Neither Claude nor Codex is available" "$log_file"
                 return 127
             fi
 
@@ -270,50 +270,50 @@ ralph_llm__exec() {
                 2>&1 | tee "$output_file" || exit_code=$?
 
             if [[ "$exit_code" -ne 0 ]] && grep -qE "(\"error\":\{\"type\":\"rate_limit|anthropic.*rate.*limit|Usage limit reached|You.ve run out of|credit balance is too low)" "$output_file" 2>/dev/null; then
-                ralph_core__log "Claude rate limited!" "$log_file"
+                forgeloop_core__log "Claude rate limited!" "$log_file"
                 local sleep_duration
-                sleep_duration=$(ralph_llm__parse_rate_limit_duration "$output_file" "claude")
+                sleep_duration=$(forgeloop_llm__parse_rate_limit_duration "$output_file" "claude")
                 CLAUDE_RATE_LIMITED_UNTIL=$(($(date +%s) + sleep_duration))
-                [[ -n "$state_file" ]] && ralph_llm__save_state "$state_file"
+                [[ -n "$state_file" ]] && forgeloop_llm__save_state "$state_file"
 
-                if [[ "$ENABLE_FAILOVER" = "true" ]] && ralph_llm__has_codex && ! ralph_llm__is_rate_limited "codex"; then
-                    ralph_core__log "Failing over to Codex..." "$log_file"
-                    ralph_core__notify "$repo_dir" "🔄" "Model Failover" "Claude rate limited. Switching to Codex."
+                if [[ "$ENABLE_FAILOVER" = "true" ]] && forgeloop_llm__has_codex && ! forgeloop_llm__is_rate_limited "codex"; then
+                    forgeloop_core__log "Failing over to Codex..." "$log_file"
+                    forgeloop_core__notify "$repo_dir" "🔄" "Model Failover" "Claude rate limited. Switching to Codex."
                     rm -f "$output_file"
-                    FORCE_MODEL="codex" ralph_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
+                    FORCE_MODEL="codex" forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
                     return $?
                 fi
 
                 local sleep_hours=$((sleep_duration / 3600))
                 local sleep_mins=$(((sleep_duration % 3600) / 60))
-                ralph_core__log "Sleeping ${sleep_hours}h ${sleep_mins}m..." "$log_file"
-                ralph_core__notify "$repo_dir" "⏸️" "Ralph Paused" "Rate limited. Sleeping ${sleep_hours}h ${sleep_mins}m"
+                forgeloop_core__log "Sleeping ${sleep_hours}h ${sleep_mins}m..." "$log_file"
+                forgeloop_core__notify "$repo_dir" "⏸️" "Forgeloop Paused" "Rate limited. Sleeping ${sleep_hours}h ${sleep_mins}m"
                 rm -f "$output_file"
                 sleep "$sleep_duration"
                 CLAUDE_RATE_LIMITED_UNTIL=0
-                [[ -n "$state_file" ]] && ralph_llm__save_state "$state_file"
-                echo "$prompt_content" | ralph_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file"
+                [[ -n "$state_file" ]] && forgeloop_llm__save_state "$state_file"
+                echo "$prompt_content" | forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file"
                 return $?
             fi
             ;;
 
         codex)
-            if ! ralph_llm__has_codex; then
-                if ralph_llm__has_claude; then
-                    ralph_core__log "Codex not available, forcing Claude..." "$log_file"
-                    FORCE_MODEL="claude" ralph_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
+            if ! forgeloop_llm__has_codex; then
+                if forgeloop_llm__has_claude; then
+                    forgeloop_core__log "Codex not available, forcing Claude..." "$log_file"
+                    FORCE_MODEL="claude" forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
                     return $?
                 fi
-                ralph_core__log "Neither Codex nor Claude is available" "$log_file"
+                forgeloop_core__log "Neither Codex nor Claude is available" "$log_file"
                 return 127
             fi
 
             local codex_config
-            codex_config=$(ralph_llm__get_codex_config_for_task "$task_type")
+            codex_config=$(forgeloop_llm__get_codex_config_for_task "$task_type")
             local codex_model="${codex_config%% *}"
             local codex_reasoning="${codex_config##* }"
 
-            ralph_core__log "Codex config: model=$codex_model reasoning=$codex_reasoning" "$log_file"
+            forgeloop_core__log "Codex config: model=$codex_model reasoning=$codex_reasoning" "$log_file"
 
             echo "$prompt_content" | $CODEX_CLI exec \
                 $CODEX_FLAGS \
@@ -322,29 +322,29 @@ ralph_llm__exec() {
                 - 2>&1 | tee "$output_file" || exit_code=$?
 
             if [[ "$exit_code" -ne 0 ]] && grep -qE "(openai.*rate.*limit|Rate limit reached for|You exceeded your current quota|Request too large)" "$output_file" 2>/dev/null; then
-                ralph_core__log "Codex rate limited!" "$log_file"
+                forgeloop_core__log "Codex rate limited!" "$log_file"
                 local sleep_duration
-                sleep_duration=$(ralph_llm__parse_rate_limit_duration "$output_file" "codex")
+                sleep_duration=$(forgeloop_llm__parse_rate_limit_duration "$output_file" "codex")
                 CODEX_RATE_LIMITED_UNTIL=$(($(date +%s) + sleep_duration))
-                [[ -n "$state_file" ]] && ralph_llm__save_state "$state_file"
+                [[ -n "$state_file" ]] && forgeloop_llm__save_state "$state_file"
 
-                if [[ "$ENABLE_FAILOVER" = "true" ]] && ralph_llm__has_claude && ! ralph_llm__is_rate_limited "claude"; then
-                    ralph_core__log "Failing over to Claude..." "$log_file"
-                    ralph_core__notify "$repo_dir" "🔄" "Model Failover" "Codex rate limited. Switching to Claude."
+                if [[ "$ENABLE_FAILOVER" = "true" ]] && forgeloop_llm__has_claude && ! forgeloop_llm__is_rate_limited "claude"; then
+                    forgeloop_core__log "Failing over to Claude..." "$log_file"
+                    forgeloop_core__notify "$repo_dir" "🔄" "Model Failover" "Codex rate limited. Switching to Claude."
                     rm -f "$output_file"
-                    FORCE_MODEL="claude" ralph_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
+                    FORCE_MODEL="claude" forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
                     return $?
                 fi
 
                 local sleep_hours=$((sleep_duration / 3600))
                 local sleep_mins=$(((sleep_duration % 3600) / 60))
-                ralph_core__log "Sleeping ${sleep_hours}h ${sleep_mins}m..." "$log_file"
-                ralph_core__notify "$repo_dir" "⏸️" "Ralph Paused" "Rate limited. Sleeping ${sleep_hours}h ${sleep_mins}m"
+                forgeloop_core__log "Sleeping ${sleep_hours}h ${sleep_mins}m..." "$log_file"
+                forgeloop_core__notify "$repo_dir" "⏸️" "Forgeloop Paused" "Rate limited. Sleeping ${sleep_hours}h ${sleep_mins}m"
                 rm -f "$output_file"
                 sleep "$sleep_duration"
                 CODEX_RATE_LIMITED_UNTIL=0
-                [[ -n "$state_file" ]] && ralph_llm__save_state "$state_file"
-                echo "$prompt_content" | ralph_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file"
+                [[ -n "$state_file" ]] && forgeloop_llm__save_state "$state_file"
+                echo "$prompt_content" | forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file"
                 return $?
             fi
             ;;
@@ -359,35 +359,41 @@ ralph_llm__exec() {
 # =============================================================================
 
 # Run Codex review on recent changes
-# Usage: ralph_llm__run_codex_review "$REPO_DIR" "$REVIEW_SCHEMA" "$STATE_FILE" "$LOG_FILE"
-ralph_llm__run_codex_review() {
+# Usage: forgeloop_llm__run_codex_review "$REPO_DIR" "$REVIEW_SCHEMA" "$STATE_FILE" "$LOG_FILE"
+forgeloop_llm__run_codex_review() {
     local repo_dir="$1"
     local review_schema="$2"
     local state_file="${3:-}"
     local log_file="${4:-}"
 
-    if ! ralph_llm__has_codex || [[ "$ENABLE_CODEX_REVIEW" != "true" ]]; then
+    if ! forgeloop_llm__has_codex || [[ "$ENABLE_CODEX_REVIEW" != "true" ]]; then
         return 0
     fi
-    if ralph_llm__is_rate_limited "codex"; then
-        ralph_core__log "Skipping Codex review (rate limited)" "$log_file"
+    if forgeloop_llm__is_rate_limited "codex"; then
+        forgeloop_core__log "Skipping Codex review (rate limited)" "$log_file"
         return 0
     fi
 
     local diff
-    diff=$(git diff HEAD~1 2>/dev/null || echo "")
+    diff=$(git -C "$repo_dir" diff 2>/dev/null || echo "")
     if [[ -z "$diff" ]]; then
-        ralph_core__log "No changes to review" "$log_file"
+        diff=$(git -C "$repo_dir" diff --staged 2>/dev/null || echo "")
+    fi
+    if [[ -z "$diff" ]]; then
+        diff=$(git -C "$repo_dir" diff HEAD~1 2>/dev/null || echo "")
+    fi
+    if [[ -z "$diff" ]]; then
+        forgeloop_core__log "No changes to review" "$log_file"
         return 0
     fi
 
-    ralph_core__log "Running Codex review..." "$log_file"
+    forgeloop_core__log "Running Codex review..." "$log_file"
 
     local review_result
     review_result=$(mktemp)
 
     local codex_config
-    codex_config=$(ralph_llm__get_codex_config_for_task "review")
+    codex_config=$(forgeloop_llm__get_codex_config_for_task "review")
     local codex_model="${codex_config%% *}"
     local codex_reasoning="${codex_config##* }"
 
@@ -407,19 +413,19 @@ ralph_llm__run_codex_review() {
         verdict=$(jq -r '.verdict // "unknown"' "$review_result" 2>/dev/null || echo "unknown")
         finding_count=$(jq -r '.findings | length' "$review_result" 2>/dev/null || echo "0")
 
-        ralph_core__log "Codex review: $verdict ($finding_count findings)" "$log_file"
+        forgeloop_core__log "Codex review: $verdict ($finding_count findings)" "$log_file"
 
         if [[ "$verdict" = "needs_fixes" ]] && [[ "$finding_count" -gt 0 ]]; then
             local fixes
             fixes=$(jq -r '.findings[] | select(.severity == "high" or .severity == "critical") | "- [\(.severity)] \(.title): \(.fix // .description)"' "$review_result" 2>/dev/null || echo "")
 
             if [[ -n "$fixes" ]]; then
-                ralph_core__log "Feeding Codex findings back for repair..." "$log_file"
-                printf "Fix these issues found in code review:\n\n%s" "$fixes" | ralph_llm__exec "$repo_dir" "stdin" "build" "$state_file" "$log_file"
+                forgeloop_core__log "Feeding Codex findings back for repair..." "$log_file"
+                printf "Fix these issues found in code review:\n\n%s" "$fixes" | forgeloop_llm__exec "$repo_dir" "stdin" "build" "$state_file" "$log_file"
 
-                if [[ -n "${RALPH_TEST_CMD:-}" ]]; then
-                    ralph_core__log "Running tests after review fixes: $RALPH_TEST_CMD" "$log_file"
-                    (cd "$repo_dir" && bash -lc "$RALPH_TEST_CMD" 2>&1 | tail -50) || true
+                if [[ -n "${FORGELOOP_TEST_CMD:-}" ]]; then
+                    forgeloop_core__log "Running tests after review fixes: $FORGELOOP_TEST_CMD" "$log_file"
+                    (cd "$repo_dir" && bash -lc "$FORGELOOP_TEST_CMD" 2>&1 | tail -50) || true
                 fi
             fi
         fi
@@ -429,35 +435,38 @@ ralph_llm__run_codex_review() {
 }
 
 # Run security review on staged/recent changes
-# Usage: ralph_llm__security_gate "$REPO_DIR" "$SECURITY_SCHEMA" "$STATE_FILE" "$LOG_FILE"
-ralph_llm__security_gate() {
+# Usage: forgeloop_llm__security_gate "$REPO_DIR" "$SECURITY_SCHEMA" "$STATE_FILE" "$LOG_FILE"
+forgeloop_llm__security_gate() {
     local repo_dir="$1"
     local security_schema="$2"
     local state_file="${3:-}"
     local log_file="${4:-}"
 
     local diff
-    diff=$(git diff --staged 2>/dev/null || echo "")
+    diff=$(git -C "$repo_dir" diff 2>/dev/null || echo "")
     if [[ -z "$diff" ]]; then
-        diff=$(git diff HEAD~1 2>/dev/null || echo "")
+        diff=$(git -C "$repo_dir" diff --staged 2>/dev/null || echo "")
+    fi
+    if [[ -z "$diff" ]]; then
+        diff=$(git -C "$repo_dir" diff HEAD~1 2>/dev/null || echo "")
     fi
     [[ -z "$diff" ]] && return 0
 
-    ralph_core__log "Running security review..." "$log_file"
+    forgeloop_core__log "Running security review..." "$log_file"
 
     local security_result
     security_result=$(mktemp)
 
     local sec_model
-    sec_model=$(ralph_llm__get_model_for_task "security")
+    sec_model=$(forgeloop_llm__get_model_for_task "security")
 
-    if ralph_llm__is_rate_limited "$sec_model"; then
+    if forgeloop_llm__is_rate_limited "$sec_model"; then
         local alt_model
         if [[ "$sec_model" = "claude" ]]; then alt_model="codex"; else alt_model="claude"; fi
-        if ! ralph_llm__is_rate_limited "$alt_model"; then
+        if ! forgeloop_llm__is_rate_limited "$alt_model"; then
             sec_model="$alt_model"
         else
-            ralph_core__log "Both models rate-limited, skipping security review" "$log_file"
+            forgeloop_core__log "Both models rate-limited, skipping security review" "$log_file"
             return 0
         fi
     fi
@@ -465,7 +474,7 @@ ralph_llm__security_gate() {
     case "$sec_model" in
         codex)
             local codex_config
-            codex_config=$(ralph_llm__get_codex_config_for_task "security")
+            codex_config=$(forgeloop_llm__get_codex_config_for_task "security")
             local codex_model="${codex_config%% *}"
             local codex_reasoning="${codex_config##* }"
 
@@ -494,9 +503,9 @@ ralph_llm__security_gate() {
         local safe
         safe=$(jq -r '.safe // true' "$security_result" 2>/dev/null || echo "true")
         if [[ "$safe" = "false" ]]; then
-            ralph_core__log "Security review found issues" "$log_file"
+            forgeloop_core__log "Security review found issues" "$log_file"
             jq -r '.issues[] | "  - [\(.severity)] \(.type): \(.description)"' "$security_result" 2>/dev/null || true
-            ralph_core__notify "$repo_dir" "🚨" "Security Review Warning" "Found potential security issues in diff"
+            forgeloop_core__notify "$repo_dir" "🚨" "Security Review Warning" "Found potential security issues in diff"
         fi
     fi
 

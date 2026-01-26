@@ -1,6 +1,6 @@
 # Observed Patterns
 
-Behavioral patterns discovered during work. These inform how Ralph approaches similar tasks.
+Behavioral patterns discovered during work. These inform how Forgeloop approaches similar tasks.
 
 ## Entry Format
 

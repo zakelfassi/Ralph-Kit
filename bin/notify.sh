@@ -1,6 +1,6 @@
 #!/bin/bash
 # Manual notification script (Slack Incoming Webhook)
-# Usage: ./ralph/bin/notify.sh "emoji" "title" "message"
+# Usage: ./forgeloop/bin/notify.sh "emoji" "title" "message"
 
 set -euo pipefail
 

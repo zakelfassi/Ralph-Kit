@@ -1,5 +1,5 @@
 .DS_Store
-.ralph/
+.forgeloop/
 *.log
 .env.local
 

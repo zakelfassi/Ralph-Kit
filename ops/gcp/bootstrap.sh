@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Ralph Kit - GCP VM bootstrap
+# Forgeloop - GCP VM bootstrap
 #
 # Intended to run on an Ubuntu VM (as root via sudo).
 # Installs:
 # - base tools: git/curl/jq/tmux
 # - Node.js + pnpm
 # - codex + claude CLIs (best-effort)
-# - optional API key env file at /etc/ralph/keys.env
-# - optional /opt/ralph-kit (if a tarball was provided separately)
+# - optional API key env file at /etc/forgeloop/keys.env
+# - optional /opt/forgeloop (if a tarball was provided separately)
 #
 # Usage:
 #   sudo bash bootstrap.sh
@@ -26,7 +26,7 @@ fi
 USER_HOME="/home/$SUDO_USER_NAME"
 
 # Inputs (expected to exist if provision script uploaded them)
-SECRETS_FILE_DEFAULT="$USER_HOME/ralph-secrets.env"
+SECRETS_FILE_DEFAULT="$USER_HOME/forgeloop-secrets.env"
 
 SECRETS_FILE="$SECRETS_FILE_DEFAULT"
 SKIP_CODEX="false"
@@ -52,7 +52,7 @@ Usage:
   sudo bash bootstrap.sh [--secrets-file /path/to/env] [--skip-codex] [--skip-claude]
 
 Notes:
-- If --secrets-file exists, it will be installed to /etc/ralph/keys.env (mode 600).
+- If --secrets-file exists, it will be installed to /etc/forgeloop/keys.env (mode 600).
 - Secrets file should contain lines like OPENAI_API_KEY=... and/or ANTHROPIC_API_KEY=...
 USAGE
       exit 0
@@ -112,31 +112,31 @@ if [ "$SKIP_CLAUDE" != "true" ]; then
 fi
 
 log "Configuring optional API keys..."
-mkdir -p /etc/ralph
+mkdir -p /etc/forgeloop
 
 if [ -f "$SECRETS_FILE" ]; then
-  install -m 600 -o root -g root "$SECRETS_FILE" /etc/ralph/keys.env
-  log "Installed secrets to /etc/ralph/keys.env"
+  install -m 600 -o root -g root "$SECRETS_FILE" /etc/forgeloop/keys.env
+  log "Installed secrets to /etc/forgeloop/keys.env"
 else
   log "No secrets file found at $SECRETS_FILE (skipping key install)"
 fi
 
-cat > /etc/profile.d/ralph-env.sh <<'PROFILE'
-# Ralph env loader (API keys)
-# - Loads /etc/ralph/keys.env if present
+cat > /etc/profile.d/forgeloop-env.sh <<'PROFILE'
+# Forgeloop env loader (API keys)
+# - Loads /etc/forgeloop/keys.env if present
 # - keys.env should contain VAR=VALUE lines
 
-if [ -f /etc/ralph/keys.env ]; then
+if [ -f /etc/forgeloop/keys.env ]; then
   set -a
-  . /etc/ralph/keys.env
+  . /etc/forgeloop/keys.env
   set +a
 fi
 PROFILE
-chmod 644 /etc/profile.d/ralph-env.sh
+chmod 644 /etc/profile.d/forgeloop-env.sh
 
 log "Bootstrap complete."
 log "Next steps (as $SUDO_USER_NAME):"
-log "  - source /etc/profile.d/ralph-env.sh (or reconnect SSH)"
+log "  - source /etc/profile.d/forgeloop-env.sh (or reconnect SSH)"
 log "  - clone your target repo"
-log "  - install kit into repo: /opt/ralph-kit/install.sh /path/to/repo --wrapper"
-log "  - run: ./ralph.sh plan 1 && ./ralph.sh build 10"
+log "  - install kit into repo: /opt/forgeloop/install.sh /path/to/repo --wrapper"
+log "  - run: ./forgeloop.sh plan 1 && ./forgeloop.sh build 10"

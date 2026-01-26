@@ -107,7 +107,7 @@ Remaining questions or areas needing clarification.
 
 ## Writing for Agents
 
-The PRD reader may be an AI agent (Ralph). Therefore:
+The PRD reader may be an AI agent (Forgeloop). Therefore:
 
 - Be explicit and unambiguous
 - Avoid jargon or explain it
@@ -188,12 +188,12 @@ Add priority levels to tasks so users can focus on what matters most.
 
 ---
 
-## Integration with Ralph
+## Integration with Forgeloop
 
 After creating a PRD:
 
 1. **Checklist Lane:** Add tasks to `IMPLEMENTATION_PLAN.md` with REQUIRED TESTS derived from acceptance criteria
-2. **Tasks Lane:** Convert PRD to `prd.json` using the `tasks` skill, then run `./ralph.sh tasks`
+2. **Tasks Lane:** Convert PRD to `prd.json` using the `tasks` skill, then run `./forgeloop.sh tasks`
 
 Use the `tasks` skill to convert this PRD into machine-executable format.
 

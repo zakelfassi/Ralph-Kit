@@ -1,6 +1,6 @@
 # Docs
 
-Use `docs/` for supporting documents Ralph should consider while planning/building:
+Use `docs/` for supporting documents Forgeloop should consider while planning/building:
 - PRD / requirements
 - Architecture notes
 - Design / UX guidance

@@ -1,29 +1,29 @@
-# GCP Runner (Ralph-equipped VM)
+# GCP Runner (Forgeloop-equipped VM)
 
-This folder contains a simple GCP flow to get a **Ralph-equipped VM** that can run loops in full-auto mode.
+This folder contains a simple GCP flow to get a **Forgeloop-equipped VM** that can run loops in full-auto mode.
 
 ## Quick start
 
-From the `ralph-kit` repo root:
+From the `forgeloop` repo root:
 
 ```bash
 OPENAI_API_KEY=... ANTHROPIC_API_KEY=... \
-  ops/gcp/provision.sh --name ralph-runner --project <gcp-project> --zone us-central1-a
+  ops/gcp/provision.sh --name forgeloop-runner --project <gcp-project> --zone us-central1-a
 ```
 
 This will:
 - Create a new Ubuntu VM
-- Upload `ralph-kit` to the VM and install it at `/opt/ralph-kit`
+- Upload `forgeloop` to the VM and install it at `/opt/forgeloop`
 - Install Node.js + pnpm + base tooling
 - Install `codex` + `claude` CLIs (best-effort)
-- Store keys at `/etc/ralph/keys.env` (mode 600) and load them via `/etc/profile.d/ralph-env.sh`
+- Store keys at `/etc/forgeloop/keys.env` (mode 600) and load them via `/etc/profile.d/forgeloop-env.sh`
 
 ## After provisioning
 
 SSH in:
 
 ```bash
-gcloud compute ssh ralph-runner --project <gcp-project> --zone us-central1-a
+gcloud compute ssh forgeloop-runner --project <gcp-project> --zone us-central1-a
 ```
 
 Then clone your target repo and install the kit:
@@ -31,11 +31,11 @@ Then clone your target repo and install the kit:
 ```bash
 mkdir -p ~/work && cd ~/work
 git clone <your-repo-url> repo
-/opt/ralph-kit/install.sh ~/work/repo --wrapper
+/opt/forgeloop/install.sh ~/work/repo --wrapper
 
 cd ~/work/repo
-./ralph.sh plan 1
-./ralph.sh build 10
+./forgeloop.sh plan 1
+./forgeloop.sh build 10
 ```
 
 ## Security notes

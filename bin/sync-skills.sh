@@ -3,10 +3,10 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Sync Ralph Kit skills into agent-specific discovery locations.
+Sync Forgeloop skills into agent-specific discovery locations.
 
 Usage:
-  ./ralph/bin/sync-skills.sh [--claude] [--codex] [--claude-global] [--codex-global] [--amp] [--all] [--include-project] [--project-prefix <prefix>]
+  ./forgeloop/bin/sync-skills.sh [--claude] [--codex] [--claude-global] [--codex-global] [--amp] [--all] [--include-project] [--project-prefix <prefix>]
 
 What it does:
   --claude        Create/refresh .claude/skills symlinks in the repo (Claude Code)
@@ -18,7 +18,7 @@ What it does:
   --force-symlinks  Overwrite non-symlink files/dirs that would collide
 
 Notes:
-  - Skills are sourced from ralph/skills when vendored, or ./skills when running in this repo.
+  - Skills are sourced from forgeloop/skills when vendored, or ./skills when running in this repo.
   - When vendored, repo-root ./skills (project skills) are also linked into .claude/skills and .codex/skills (if present).
   - Use --include-project to also install repo-root ./skills into global agent dirs (namespaced by --project-prefix).
 USAGE
@@ -108,17 +108,17 @@ fi
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 
 # Resolve repo root for both:
-# - vendored:   <repo>/ralph/bin/sync-skills.sh  -> <repo>
+# - vendored:   <repo>/forgeloop/bin/sync-skills.sh  -> <repo>
 # - standalone: <repo>/bin/sync-skills.sh        -> <repo>
-if [[ "$script_dir" == */ralph/bin ]]; then
+if [[ "$script_dir" == */forgeloop/bin ]]; then
   repo_dir="$(cd "$script_dir/../.." && pwd)"
-  ralph_dir="$repo_dir/ralph"
+  forgeloop_dir="$repo_dir/forgeloop"
 else
   repo_dir="$(cd "$script_dir/.." && pwd)"
-  ralph_dir="$repo_dir"
+  forgeloop_dir="$repo_dir"
 fi
 
-kit_skills_root="$ralph_dir/skills"
+kit_skills_root="$forgeloop_dir/skills"
 project_skills_root="$repo_dir/skills"
 repo_name="$(basename "$repo_dir")"
 
@@ -148,7 +148,7 @@ if [[ ! -d "$kit_skills_root" ]]; then
 fi
 
 link_repo_skills=false
-if [[ "$repo_dir" != "$ralph_dir" ]] && [[ -d "$project_skills_root" ]]; then
+if [[ "$repo_dir" != "$forgeloop_dir" ]] && [[ -d "$project_skills_root" ]]; then
   link_repo_skills=true
 fi
 
@@ -220,7 +220,7 @@ sync_claude() {
     [[ -L "$p" && ! -e "$p" ]] && rm -f "$p" || true
   done
 
-  # Link kit skills as ralph-<name> to avoid collisions with project skills.
+  # Link kit skills as forgeloop-<name> to avoid collisions with project skills.
   while IFS= read -r -d '' skill_md; do
     local skill_dir skill_name rel target link_name
     skill_dir="$(dirname "$skill_md")"
@@ -228,7 +228,7 @@ sync_claude() {
 
     rel="$(repo_relpath_from_root "$skill_dir")"
     target="../../$rel"
-    link_name="ralph-$skill_name"
+    link_name="forgeloop-$skill_name"
 
     if check_symlink_collision "$dst_dir/$link_name" "$link_name"; then
       ln -snf "$target" "$dst_dir/$link_name"
@@ -277,7 +277,7 @@ sync_codex_repo() {
 
     rel="$(repo_relpath_from_root "$skill_dir")"
     target="../../$rel"
-    link_name="ralph-$skill_name"
+    link_name="forgeloop-$skill_name"
 
     if check_symlink_collision "$dst_dir/$link_name" "$link_name"; then
       ln -snf "$target" "$dst_dir/$link_name"
@@ -342,7 +342,7 @@ sync_global_dir() {
     local skill_dir skill_name dest_skill_dir
     skill_dir="$(dirname "$skill_md")"
     skill_name="$(basename "$skill_dir")"
-    dest_skill_dir="$agent_dir/ralph-$skill_name"
+    dest_skill_dir="$agent_dir/forgeloop-$skill_name"
 
     sync_copy_tree "$skill_dir" "$dest_skill_dir"
     echo "$agent_name: wrote $dest_skill_dir (from $skill_dir)"

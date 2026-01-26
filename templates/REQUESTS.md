@@ -1,6 +1,6 @@
 # User Requests
 
-Add requests below. Ralph will process them in order.
+Add requests below. Forgeloop will process them in order.
 
 ## Format
 
@@ -18,17 +18,17 @@ Description of what you want...
 
 ## Daemon Control Flags
 
-Add these anywhere in this file to control the Ralph daemon:
+Add these anywhere in this file to control the Forgeloop daemon:
 
 - `[PAUSE]` - Pause the daemon loop
 - `[REPLAN]` - Run planning once, then continue building
 - `[DEPLOY]` - Run the configured deploy command
-- `[INGEST_LOGS]` - Analyze configured logs and append a new request (see `./ralph/bin/ingest-logs.sh`)
+- `[INGEST_LOGS]` - Analyze configured logs and append a new request (see `./forgeloop/bin/ingest-logs.sh`)
 - `[KNOWLEDGE_SYNC]` - Capture knowledge from session to `system/knowledge/`
 
 ## Ingested Reports & Logs
 
-When using `./ralph/bin/ingest-report.sh` or `./ralph/bin/ingest-logs.sh`, entries are appended below with:
+When using `./forgeloop/bin/ingest-report.sh` or `./forgeloop/bin/ingest-logs.sh`, entries are appended below with:
 - `Source: report:<hash>` - For idempotency tracking
 - `Source: logs:<hash>` - For idempotency tracking
 - `Signature: logsig:<hash>` - Best-effort dedupe for repeated runtime errors

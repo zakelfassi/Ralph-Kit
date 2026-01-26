@@ -4,18 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Ralph Kit — Skills-Driven Development. Build loops. Ship with backpressure.</title>
+    <title>Forgeloop — Skills-Driven Development. Build loops. Ship with backpressure.</title>
     <meta
       name="description"
-      content="Ralph Kit is a portable loop for AI-assisted development: kickoff specs, plan tasks, build with backpressure — plus Skills-Driven Development to forge reusable agent skills as you ship. Includes an optional one-command GCP runner provisioner."
+      content="Forgeloop is a portable loop for AI-assisted development: kickoff specs, plan tasks, build with backpressure — plus Skills-Driven Development to forge reusable agent skills as you ship. Includes an optional one-command GCP runner provisioner."
     />
     <meta name="theme-color" content="#0b0f14" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Ralph Kit" />
+    <meta property="og:title" content="Forgeloop" />
     <meta
       property="og:description"
-      content="Build with the Ralph loop (kickoff → plan → build) plus Skills-Driven Development: forge reusable agent skills as you ship."
+      content="Build with the Forgeloop loop (kickoff → plan → build) plus Skills-Driven Development: forge reusable agent skills as you ship."
     />
     <meta property="og:type" content="website" />
 
@@ -999,7 +999,7 @@
           <div class="brand">
             <div class="mark" aria-hidden="true"></div>
             <div>
-              <h1>Ralph Kit</h1>
+              <h1>Forgeloop</h1>
               <p>Build loops. Forge skills. Any repo.</p>
             </div>
           </div>
@@ -1014,10 +1014,10 @@
             <a class="pill ghost" href="#knowledge"><span class="dot"></span>Knowledge</a>
             <a class="pill ghost secondary" href="#use"><span class="dot"></span>Use it</a>
             <a class="pill" href="#provision"><span class="dot"></span>Provision (GCP)</a>
-            <a class="pill ghost" href="https://github.com/zakelfassi/Ralph-Kit#readme" target="_blank" rel="noreferrer">
+            <a class="pill ghost" href="https://github.com/zakelfassi/Forgeloop#readme" target="_blank" rel="noreferrer">
               <span class="dot"></span>README
             </a>
-            <a class="pill" href="https://github.com/zakelfassi/Ralph-Kit" target="_blank" rel="noreferrer">
+            <a class="pill" href="https://github.com/zakelfassi/Forgeloop" target="_blank" rel="noreferrer">
               <span class="dot"></span>GitHub
             </a>
           </nav>
@@ -1043,7 +1043,7 @@
             </h2>
 
             <p class="lead">
-              Ralph Kit is a portable workflow for AI-assisted development. It installs prompts + templates and gives
+              Forgeloop is a portable workflow for AI-assisted development. It installs prompts + templates and gives
               you a repeatable loop: <b>kickoff</b> (optional) → <b>plan</b> (specs to tasks) → <b>build</b> (tasks to
               code with backpressure from tests). Then it adds <b>Skills-Driven Development</b>: before each task,
               forge reusable Skills (plain Markdown SOPs) and sync them into Codex / Claude Code.
@@ -1072,7 +1072,7 @@
               <div class="code">
                 <button class="copy" data-copy="#cmd-gcp">Copy</button>
                 <pre id="cmd-gcp">OPENAI_API_KEY=... ANTHROPIC_API_KEY=... \
-  ops/gcp/provision.sh --name ralph-runner \
+  ops/gcp/provision.sh --name forgeloop-runner \
   --project &lt;gcp-project&gt; --zone us-central1-a</pre>
               </div>
             </div>
@@ -1080,11 +1080,11 @@
             <div class="panel" style="margin-top: 14px">
               <h3>Inspiration & Sources</h3>
               <p>
-                Standing on the shoulders of giants. These projects shaped Ralph Kit.
+                Standing on the shoulders of giants. These projects shaped Forgeloop.
               </p>
               <div class="chiprow" role="list">
-                <a class="chip" role="listitem" href="https://ghuntley.com/ralph/" target="_blank" rel="noreferrer"
-                  ><span class="tag"></span><span>ghuntley.com/ralph</span></a
+                <a class="chip" role="listitem" href="https://ghuntley.com/forgeloop/" target="_blank" rel="noreferrer"
+                  ><span class="tag"></span><span>ghuntley.com/forgeloop</span></a
                 >
                 <a
                   class="chip blue"
@@ -1119,7 +1119,7 @@
               <div class="card" style="grid-column: span 4">
                 <h3>What it adds</h3>
                 <p>
-                  The core loop can be as small as "feed a prompt to an agent, repeat." Ralph Kit keeps that simplicity
+                  The core loop can be as small as "feed a prompt to an agent, repeat." Forgeloop keeps that simplicity
                   while adding structure: specs/templates, planning files, safer defaults, and a repeatable runtime.
                 </p>
                 <div class="chiprow" role="list">
@@ -1127,7 +1127,7 @@
                   <span class="chip blue" role="listitem"><span class="tag"></span><span>multi-model routing</span></span>
                   <span class="chip" role="listitem"><span class="tag"></span><span>GCP provisioner</span></span>
                   <span class="chip pink" role="listitem"><span class="tag"></span><span>kickoff prompt</span></span>
-                  <span class="chip" role="listitem"><span class="tag"></span><span>.ralph runtime</span></span>
+                  <span class="chip" role="listitem"><span class="tag"></span><span>.forgeloop runtime</span></span>
                   <span class="chip blue" role="listitem"><span class="tag"></span><span>tasks lane</span></span>
                   <span class="chip pink" role="listitem"><span class="tag"></span><span>report ingestion</span></span>
                   <span class="chip pink" role="listitem"><span class="tag"></span><span>log ingestion</span></span>
@@ -1151,10 +1151,10 @@
                   <pre id="cmd-install">REPO=/path/to/target-repo
 ./install.sh "$REPO" --wrapper --skills
 cd "$REPO"
-./ralph.sh sync-skills
-./ralph.sh plan 1
-./ralph.sh build 10
-# Or use tasks lane: ./ralph.sh tasks 10</pre>
+./forgeloop.sh sync-skills
+./forgeloop.sh plan 1
+./forgeloop.sh build 10
+# Or use tasks lane: ./forgeloop.sh tasks 10</pre>
                 </div>
                 <div class="chiprow" role="list" style="margin-top: 12px">
                   <span class="chip" role="listitem"><span class="tag"></span><span>--batch (CI mode)</span></span>
@@ -1235,7 +1235,7 @@ flowchart LR
           </div>
 
           <div class="callout" style="margin-top: 14px">
-            <b>Daemon mode:</b> Optionally run <code>./ralph.sh daemon 300</code> to watch git + REQUESTS.md and run loops automatically.
+            <b>Daemon mode:</b> Optionally run <code>./forgeloop.sh daemon 300</code> to watch git + REQUESTS.md and run loops automatically.
             Control with <code>[PAUSE]</code>, <code>[REPLAN]</code>, <code>[DEPLOY]</code>, <code>[INGEST_LOGS]</code>, <code>[KNOWLEDGE_SYNC]</code> flags.
           </div>
 
@@ -1245,7 +1245,7 @@ flowchart LR
               <h4>Kickoff (new projects)</h4>
               <p>
                 Use a memory-backed agent (ChatGPT/Claude Projects, long-running agent, etc.) to draft
-                <code>docs/*</code> + <code>specs/*</code>. Ralph then plans from those artifacts.
+                <code>docs/*</code> + <code>specs/*</code>. Forgeloop then plans from those artifacts.
               </p>
             </div>
             <div class="step" style="position: relative">
@@ -1269,7 +1269,7 @@ flowchart LR
           <div class="callout">
             <b>Full-auto ≠ reckless:</b> in auto-permissions mode, the agent can run arbitrary commands.
             Run in a dedicated VM/container. Treat the environment as disposable.
-            See <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>.
+            See <a class="underline" href="https://github.com/zakelfassi/Forgeloop/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>.
           </div>
         </section>
 
@@ -1322,17 +1322,17 @@ flowchart LR
           <div class="panelbox" style="margin-top: 14px">
             <h3>Forge + sync</h3>
             <p>
-              Project skills live at <code>skills/</code> (repo root). The kit ships a base library under <code>ralph/skills/</code>.
+              Project skills live at <code>skills/</code> (repo root). The kit ships a base library under <code>forgeloop/skills/</code>.
               Sync them into <code>.claude/skills</code> (Claude Code) and <code>.codex/skills</code> (Codex) so agents can discover and reuse them.
               If a sandbox blocks Codex mirroring or a destination exists as a non-symlink (your custom skill), <code>sync-skills</code> will warn and skip.
             </p>
             <div class="code" style="margin-top: 12px">
               <button class="copy" data-copy="#cmd-sync-skills">Copy</button>
-              <pre id="cmd-sync-skills">./ralph.sh sync-skills
+              <pre id="cmd-sync-skills">./forgeloop.sh sync-skills
 # Optional: also install to user skill dirs (Codex/Claude/Amp)
-./ralph.sh sync-skills --all
+./forgeloop.sh sync-skills --all
 # Force overwrite non-symlink collisions
-./ralph.sh sync-skills --force-symlinks</pre>
+./forgeloop.sh sync-skills --force-symlinks</pre>
             </div>
           </div>
 
@@ -1366,8 +1366,8 @@ flowchart LR
               </div>
               <div class="code" style="margin-top: 12px">
                 <button class="copy" data-copy="#cmd-knowledge">Copy</button>
-                <pre id="cmd-knowledge">./ralph.sh session-start   # Load context
-./ralph.sh session-end     # Capture knowledge</pre>
+                <pre id="cmd-knowledge">./forgeloop.sh session-start   # Load context
+./forgeloop.sh session-end     # Capture knowledge</pre>
               </div>
             </div>
 
@@ -1395,8 +1395,8 @@ flowchart LR
             </p>
             <div class="code" style="margin-top: 12px">
               <button class="copy" data-copy="#cmd-lite">Copy</button>
-              <pre id="cmd-lite">./ralph.sh build --lite 1   # One-shot, uses AGENTS-lite.md
-./ralph.sh build --full 10  # Full mode (default)</pre>
+              <pre id="cmd-lite">./forgeloop.sh build --lite 1   # One-shot, uses AGENTS-lite.md
+./forgeloop.sh build --full 10  # Full mode (default)</pre>
             </div>
           </div>
         </section>
@@ -1405,7 +1405,7 @@ flowchart LR
           <div class="sectionhead">
             <h2>Two Workflow Lanes</h2>
             <p>
-              Ralph Kit supports two approaches to task tracking. Pick based on your workflow: human-in-the-loop vs full automation.
+              Forgeloop supports two approaches to task tracking. Pick based on your workflow: human-in-the-loop vs full automation.
             </p>
           </div>
 
@@ -1418,8 +1418,8 @@ flowchart LR
               </p>
               <div class="code" style="margin-top: 12px">
                 <button class="copy" data-copy="#lane-checklist">Copy</button>
-                <pre id="lane-checklist">./ralph.sh plan 1
-./ralph.sh build 10</pre>
+                <pre id="lane-checklist">./forgeloop.sh plan 1
+./forgeloop.sh build 10</pre>
               </div>
               <div class="chiprow" role="list">
                 <span class="chip" role="listitem"><span class="tag"></span><span>human-readable</span></span>
@@ -1435,7 +1435,7 @@ flowchart LR
               </p>
               <div class="code" style="margin-top: 12px">
                 <button class="copy" data-copy="#lane-tasks">Copy</button>
-                <pre id="lane-tasks">./ralph.sh tasks 10</pre>
+                <pre id="lane-tasks">./forgeloop.sh tasks 10</pre>
               </div>
               <div class="chiprow" role="list">
                 <span class="chip pink" role="listitem"><span class="tag"></span><span>machine-readable</span></span>
@@ -1467,8 +1467,8 @@ flowchart LR
                 </tr>
                 <tr>
                   <td>Run command</td>
-                  <td>./ralph.sh build N</td>
-                  <td>./ralph.sh tasks N</td>
+                  <td>./forgeloop.sh build N</td>
+                  <td>./forgeloop.sh tasks N</td>
                 </tr>
                 <tr>
                   <td>Best for</td>
@@ -1491,16 +1491,16 @@ flowchart LR
           <div class="sectionhead">
             <h2>What gets added to your repo</h2>
             <p>
-              Ralph steers by <b>signs</b>: prompts, operational notes, patterns in your codebase, and backpressure from
+              Forgeloop steers by <b>signs</b>: prompts, operational notes, patterns in your codebase, and backpressure from
               tests/typecheck/lint. This kit drops in the structure so the signs are consistent — plus a typed Skills library
-              (<code>ralph/skills</code>) and room for repo-specific skills (<code>skills/</code>) so your workflow compounds over time.
+              (<code>forgeloop/skills</code>) and room for repo-specific skills (<code>skills/</code>) so your workflow compounds over time.
             </p>
           </div>
 
           <div class="grid">
             <div class="card" style="grid-column: span 7">
               <h3>File layout</h3>
-              <p>Installer writes prompts + coordination files at repo root, and vendors the kit at <code>./ralph</code>.</p>
+              <p>Installer writes prompts + coordination files at repo root, and vendors the kit at <code>./forgeloop</code>.</p>
               <div class="code nowrap" style="margin-top: 12px">
                 <button class="copy" data-copy="#tree">Copy</button>
                 <pre id="tree">./
@@ -1546,11 +1546,11 @@ flowchart LR
 ├─ docs/
 │  ├─ README.md
 │  └─ ...
-└─ ralph/
+└─ forgeloop/
    ├─ bin/
    │  ├─ loop.sh            # Main build loop
    │  ├─ loop-tasks.sh      # Tasks lane loop
-   │  ├─ ralph-daemon.sh    # Daemon mode
+   │  ├─ forgeloop-daemon.sh    # Daemon mode
    │  ├─ ingest-report.sh   # Report ingestion
    │  ├─ ingest-logs.sh     # Log ingestion
    │  ├─ kickoff.sh         # Kickoff helper
@@ -1580,18 +1580,18 @@ flowchart LR
               <p>Works with Codex and/or Claude. By default: Codex plans/reviews, Claude builds. Override via env.</p>
               <ul style="margin: 10px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 14px">
                 <li><code>AI_MODEL=claude|codex</code> force one model</li>
-                <li><code>RALPH_AUTOPUSH=false</code> by default</li>
-                <li><code>./ralph.sh sync-skills</code> refresh skill discovery (Claude Code; Codex mirror when writable)</li>
-                <li><code>RALPH_TEST_CMD</code> run after review auto-fixes</li>
-                <li><code>RALPH_DEPLOY_CMD</code> used by daemon on <code>[DEPLOY]</code></li>
-                <li><code>RALPH_INGEST_LOGS_CMD</code> / <code>RALPH_INGEST_LOGS_FILE</code> used by daemon on <code>[INGEST_LOGS]</code></li>
+                <li><code>FORGELOOP_AUTOPUSH=false</code> by default</li>
+                <li><code>./forgeloop.sh sync-skills</code> refresh skill discovery (Claude Code; Codex mirror when writable)</li>
+                <li><code>FORGELOOP_TEST_CMD</code> run after review auto-fixes</li>
+                <li><code>FORGELOOP_DEPLOY_CMD</code> used by daemon on <code>[DEPLOY]</code></li>
+                <li><code>FORGELOOP_INGEST_LOGS_CMD</code> / <code>FORGELOOP_INGEST_LOGS_FILE</code> used by daemon on <code>[INGEST_LOGS]</code></li>
                 <li><code>CODEX_PLANNING_CONFIG</code> / <code>CODEX_REVIEW_CONFIG</code> reasoning tuning</li>
               </ul>
             </div>
           </div>
 
           <div class="callout">
-            <b>Tune it like a guitar:</b> if Ralph is producing the wrong shape of code, don’t only tweak prompts — add
+            <b>Tune it like a guitar:</b> if Forgeloop is producing the wrong shape of code, don’t only tweak prompts — add
             better utilities/patterns and strengthen backpressure. The repo itself becomes the steering wheel.
           </div>
         </section>
@@ -1623,7 +1623,7 @@ flowchart LR
                     <button class="copy" data-copy="#cmd-new-install">Copy</button>
                     <pre id="cmd-new-install">./install.sh /path/to/your/new-repo --wrapper --skills
 cd /path/to/your/new-repo
-./ralph.sh sync-skills</pre>
+./forgeloop.sh sync-skills</pre>
                   </div>
                   <p style="margin-top: 8px; color: var(--ink-2); font-size: 13px">
                     Tip: In TTY, existing files prompt for <b>skip/overwrite/merge/diff</b>. Use <code>--batch</code> for CI or <code>--force</code> to overwrite all.
@@ -1633,7 +1633,7 @@ cd /path/to/your/new-repo
                   Generate a kickoff prompt (paste into your memory-backed agent):
                   <div class="code" style="margin-top: 8px">
                     <button class="copy" data-copy="#cmd-kickoff">Copy</button>
-                    <pre id="cmd-kickoff">./ralph.sh kickoff "&lt;one paragraph project brief&gt;"</pre>
+                    <pre id="cmd-kickoff">./forgeloop.sh kickoff "&lt;one paragraph project brief&gt;"</pre>
                   </div>
                 </li>
                 <li>
@@ -1641,13 +1641,13 @@ cd /path/to/your/new-repo
                   a solid plan). Then run:
                   <div class="code" style="margin-top: 8px">
                     <button class="copy" data-copy="#cmd-new-run">Copy</button>
-                    <pre id="cmd-new-run">./ralph.sh plan 1
-./ralph.sh build 10</pre>
+                    <pre id="cmd-new-run">./forgeloop.sh plan 1
+./forgeloop.sh build 10</pre>
                   </div>
                 </li>
               </ul>
               <p style="margin-top: 10px; color: var(--ink-2); font-size: 14px">
-                Read the full kickoff workflow: <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/kickoff.md" target="_blank" rel="noreferrer">docs/kickoff.md</a>
+                Read the full kickoff workflow: <a class="underline" href="https://github.com/zakelfassi/Forgeloop/blob/main/docs/kickoff.md" target="_blank" rel="noreferrer">docs/kickoff.md</a>
               </p>
             </div>
 
@@ -1666,7 +1666,7 @@ cd /path/to/your/new-repo
                     <button class="copy" data-copy="#cmd-old-install">Copy</button>
                     <pre id="cmd-old-install">./install.sh /path/to/existing-repo --wrapper --skills
 cd /path/to/existing-repo
-./ralph.sh sync-skills</pre>
+./forgeloop.sh sync-skills</pre>
                   </div>
                   <p style="margin-top: 8px; color: var(--ink-2); font-size: 13px">
                     When files exist: <b>skip</b> (default), <b>overwrite</b>, <b>merge</b> (append template), or <b>diff</b> (view changes).
@@ -1676,20 +1676,20 @@ cd /path/to/existing-repo
                   Write/curate specs for the system you want (3–8 files is a great start). Then run planning:
                   <div class="code" style="margin-top: 8px">
                     <button class="copy" data-copy="#cmd-old-plan">Copy</button>
-                    <pre id="cmd-old-plan">./ralph.sh plan 1</pre>
+                    <pre id="cmd-old-plan">./forgeloop.sh plan 1</pre>
                   </div>
                 </li>
                 <li>
                   Build in loops with backpressure:
                   <div class="code" style="margin-top: 8px">
                     <button class="copy" data-copy="#cmd-old-build">Copy</button>
-                    <pre id="cmd-old-build">./ralph.sh build 10</pre>
+                    <pre id="cmd-old-build">./forgeloop.sh build 10</pre>
                   </div>
                 </li>
               </ul>
               <p style="margin-top: 10px; color: var(--ink-2); font-size: 14px">
                 Tip: use <code>plan-work</code> on a work branch when you want a scoped plan:
-                <code style="font-family: var(--font-mono)">./ralph/bin/loop.sh plan-work "scope"</code>
+                <code style="font-family: var(--font-mono)">./forgeloop/bin/loop.sh plan-work "scope"</code>
               </p>
             </div>
           </div>
@@ -1697,7 +1697,7 @@ cd /path/to/existing-repo
 
         <section id="provision">
           <div class="sectionhead">
-            <h2>Provision a Ralph-equipped VM (GCP)</h2>
+            <h2>Provision a Forgeloop-equipped VM (GCP)</h2>
             <p>
               The whole point: run full-auto without giving an agent access to your personal machine.
               Provision a dedicated runner VM, then clone your repo and loop.
@@ -1709,12 +1709,12 @@ cd /path/to/existing-repo
               <h3>One command</h3>
               <p>
                 Requires <code>gcloud</code> on your laptop. Uploads the kit to the VM, installs Node/pnpm + agent CLIs
-                (best-effort), and stores keys in <code>/etc/ralph/keys.env</code>.
+                (best-effort), and stores keys in <code>/etc/forgeloop/keys.env</code>.
               </p>
               <div class="code" style="margin-top: 12px">
                 <button class="copy" data-copy="#cmd-provision">Copy</button>
                 <pre id="cmd-provision">OPENAI_API_KEY=... ANTHROPIC_API_KEY=... \
-  ops/gcp/provision.sh --name ralph-runner \
+  ops/gcp/provision.sh --name forgeloop-runner \
   --project &lt;gcp-project&gt; --zone us-central1-a</pre>
               </div>
               <div class="callout" style="margin-top: 12px">
@@ -1728,37 +1728,37 @@ cd /path/to/existing-repo
               <p>SSH in, clone your target repo, install the kit, and run loops in <code>tmux</code>.</p>
               <div class="code" style="margin-top: 12px">
                 <button class="copy" data-copy="#cmd-after">Copy</button>
-                <pre id="cmd-after">gcloud compute ssh ralph-runner \
+                <pre id="cmd-after">gcloud compute ssh forgeloop-runner \
   --project &lt;gcp-project&gt; --zone us-central1-a
 
 mkdir -p ~/work && cd ~/work
 git clone &lt;your-repo-url&gt; repo
-/opt/ralph-kit/install.sh ~/work/repo --wrapper
+/opt/forgeloop/install.sh ~/work/repo --wrapper
 
 cd ~/work/repo
-./ralph.sh plan 1
-./ralph.sh build 10</pre>
+./forgeloop.sh plan 1
+./forgeloop.sh build 10</pre>
               </div>
             </div>
           </div>
 
           <p style="margin-top: 12px; color: var(--ink-2); font-size: 14px">
-            More details: <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/ops/gcp/README.md" target="_blank" rel="noreferrer">ops/gcp/README.md</a> and
-            <a class="underline" href="https://github.com/zakelfassi/Ralph-Kit/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>
+            More details: <a class="underline" href="https://github.com/zakelfassi/Forgeloop/blob/main/ops/gcp/README.md" target="_blank" rel="noreferrer">ops/gcp/README.md</a> and
+            <a class="underline" href="https://github.com/zakelfassi/Forgeloop/blob/main/docs/sandboxing.md" target="_blank" rel="noreferrer">docs/sandboxing.md</a>
           </p>
         </section>
 
         <footer>
           <div class="footergrid">
             <div>
-              <div style="font-family: var(--font-display); letter-spacing: -0.02em">Ralph Kit</div>
+              <div style="font-family: var(--font-display); letter-spacing: -0.02em">Forgeloop</div>
               <div style="margin-top: 6px">
                 Inspired by Geoff Huntley's Ralph methodology, marge-simpson's knowledge persistence, and compound-product's patterns.
                 "Deterministically bad in an undeterministic world." This is a tooling kit, not a magic wand.
               </div>
             </div>
             <div class="links" aria-label="Footer links">
-              <a class="pill" href="https://ghuntley.com/ralph/" target="_blank" rel="noreferrer"
+              <a class="pill" href="https://ghuntley.com/forgeloop/" target="_blank" rel="noreferrer"
                 ><span class="dot"></span>Methodology</a
               >
               <a
@@ -1775,7 +1775,7 @@ cd ~/work/repo
                 rel="noreferrer"
                 ><span class="dot"></span>marge-simpson</a
               >
-              <a class="pill" href="https://github.com/zakelfassi/Ralph-Kit" target="_blank" rel="noreferrer"
+              <a class="pill" href="https://github.com/zakelfassi/Forgeloop" target="_blank" rel="noreferrer"
                 ><span class="dot"></span>Repo</a
               >
             </div>

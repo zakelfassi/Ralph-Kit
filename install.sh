@@ -3,21 +3,21 @@ set -euo pipefail
 
 usage() {
     cat <<'USAGE'
-Ralph framework installer.
+Forgeloop framework installer.
 
 Usage:
   ./install.sh [target_repo_dir] [--force] [--wrapper] [--skills]
 
 Examples:
-  # From the ralph-kit repo:
+  # From the forgeloop repo:
   ./install.sh /path/to/target-repo --wrapper --skills
 
-  # From within a target repo where this kit is vendored at ./ralph:
-  ./ralph/install.sh --wrapper
+  # From within a target repo where this kit is vendored at ./forgeloop:
+  ./forgeloop/install.sh --wrapper
 
 Flags:
   --force         Overwrite existing files
-  --wrapper       Create ./ralph.sh convenience wrapper
+  --wrapper       Create ./forgeloop.sh convenience wrapper
   --skills        Install skills to user agent directories (~/.claude/skills, ~/.codex/skills, etc.)
   --interactive   Force interactive prompts for conflicts (even in non-TTY)
   --batch         Skip conflicts silently (no prompts, like CI)
@@ -33,11 +33,11 @@ SKILLS="false"
 INTERACTIVE="auto"  # auto, true, false
 
 # Default target:
-# - If this installer lives in a folder named "ralph", assume it's vendored into a repo at ./ralph and
+# - If this installer lives in a folder named "forgeloop", assume it's vendored into a repo at ./forgeloop and
 #   default to the parent directory (repo root).
-# - Otherwise (e.g., running from the standalone ralph-kit repo), require an explicit target path.
+# - Otherwise (e.g., running from the standalone forgeloop repo), require an explicit target path.
 TARGET_REPO_DIR=""
-if [ "$SRC_KIT_NAME" = "ralph" ]; then
+if [ "$SRC_KIT_NAME" = "forgeloop" ]; then
     TARGET_REPO_DIR="$(cd "$SRC_KIT_DIR/.." && pwd)"
 fi
 
@@ -84,7 +84,7 @@ if [ -z "$TARGET_REPO_DIR" ]; then
     exit 1
 fi
 
-DEST_KIT_DIR="$TARGET_REPO_DIR/ralph"
+DEST_KIT_DIR="$TARGET_REPO_DIR/forgeloop"
 
 copy_kit() {
     mkdir -p "$DEST_KIT_DIR"
@@ -172,7 +172,7 @@ merge_file() {
 
     separator="
 # ─────────────────────────────────────────────────────────────
-# Ralph Kit Template (merged $(date +%Y-%m-%d))
+# Forgeloop Template (merged $(date +%Y-%m-%d))
 # ─────────────────────────────────────────────────────────────
 "
 
@@ -225,7 +225,7 @@ install_file() {
 
 ensure_gitignore() {
     local gitignore="$TARGET_REPO_DIR/.gitignore"
-    local line=".ralph/"
+    local line=".forgeloop/"
 
     if [ ! -f "$gitignore" ]; then
         echo "$line" > "$gitignore"
@@ -283,7 +283,7 @@ install_skills() {
             local skill_dir skill_name dest_skill_dir
             skill_dir="$(dirname "$skill_md")"
             skill_name="$(basename "$skill_dir")"
-            dest_skill_dir="$agent_dir/ralph-$skill_name"
+            dest_skill_dir="$agent_dir/forgeloop-$skill_name"
 
             if [ -e "$dest_skill_dir" ] && [ "$FORCE" != "true" ]; then
                 echo "skip: $dest_skill_dir (exists)"
@@ -305,14 +305,14 @@ install_skills() {
 }
 
 install_wrapper() {
-    local wrapper_path="$TARGET_REPO_DIR/ralph.sh"
+    local wrapper_path="$TARGET_REPO_DIR/forgeloop.sh"
 
     if [ -e "$wrapper_path" ] && [ "$FORCE" != "true" ]; then
         echo "skip: $wrapper_path (exists)"
         return 0
     fi
 
-    cat > "$wrapper_path" <<'RALPH_WRAPPER_SH'
+    cat > "$wrapper_path" <<'FORGELOOP_WRAPPER_SH'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -321,20 +321,20 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 usage() {
   cat <<'USAGE'
 Usage:
-  ./ralph.sh plan [max_iters] [--lite|--full]
-  ./ralph.sh plan-work "scope" [max_iters]
-  ./ralph.sh build [max_iters] [--lite|--full]
-  ./ralph.sh tasks [max_iters]
-  ./ralph.sh review
-  ./ralph.sh sync-skills [--claude] [--codex] [--claude-global] [--codex-global] [--amp] [--all] [--include-project] [--project-prefix <prefix>]
-  ./ralph.sh daemon [interval_seconds]
-  ./ralph.sh ask "category" "question"
-  ./ralph.sh notify "emoji" "title" "message"
-  ./ralph.sh ingest --report <file> [--mode request|plan-work]
-  ./ralph.sh ingest-logs (--file <path> | --cmd "<command>" | --latest) [--tail <lines>] [--mode request|plan-work]
-  ./ralph.sh kickoff "<brief>" [--project <name>] [--seed <path-or-url>] [--notes <text>] [--out <path>]
-  ./ralph.sh session-start     # Load knowledge context
-  ./ralph.sh session-end       # Capture session knowledge
+  ./forgeloop.sh plan [max_iters] [--lite|--full]
+  ./forgeloop.sh plan-work "scope" [max_iters]
+  ./forgeloop.sh build [max_iters] [--lite|--full]
+  ./forgeloop.sh tasks [max_iters]
+  ./forgeloop.sh review
+  ./forgeloop.sh sync-skills [--claude] [--codex] [--claude-global] [--codex-global] [--amp] [--all] [--include-project] [--project-prefix <prefix>]
+  ./forgeloop.sh daemon [interval_seconds]
+  ./forgeloop.sh ask "category" "question"
+  ./forgeloop.sh notify "emoji" "title" "message"
+  ./forgeloop.sh ingest --report <file> [--mode request|plan-work]
+  ./forgeloop.sh ingest-logs (--file <path> | --cmd "<command>" | --latest) [--tail <lines>] [--mode request|plan-work]
+  ./forgeloop.sh kickoff "<brief>" [--project <name>] [--seed <path-or-url>] [--notes <text>] [--out <path>]
+  ./forgeloop.sh session-start     # Load knowledge context
+  ./forgeloop.sh session-end       # Capture session knowledge
 
 Modes:
   --lite    Use AGENTS-lite.md for simple one-shot tasks
@@ -343,71 +343,71 @@ USAGE
 }
 
 # Parse global flags
-RALPH_LITE=false
+FORGELOOP_LITE=false
 args=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --lite) RALPH_LITE=true; shift ;;
-    --full) RALPH_LITE=false; shift ;;
+    --lite) FORGELOOP_LITE=true; shift ;;
+    --full) FORGELOOP_LITE=false; shift ;;
     --) shift; while [[ $# -gt 0 ]]; do args+=("$1"); shift; done; break ;;
     *) args+=("$1"); shift ;;
   esac
 done
 set -- "${args[@]:-}"
 
-export RALPH_LITE
+export FORGELOOP_LITE
 
 cmd="${1:-}"
 case "$cmd" in
   plan)
-    exec "$REPO_DIR/ralph/bin/loop.sh" plan "${2:-0}"
+    exec "$REPO_DIR/forgeloop/bin/loop.sh" plan "${2:-0}"
     ;;
   plan-work)
     shift
-    exec "$REPO_DIR/ralph/bin/loop.sh" plan-work "$@"
+    exec "$REPO_DIR/forgeloop/bin/loop.sh" plan-work "$@"
     ;;
   build)
-    exec "$REPO_DIR/ralph/bin/loop.sh" "${2:-10}"
+    exec "$REPO_DIR/forgeloop/bin/loop.sh" "${2:-10}"
     ;;
   review)
-    exec "$REPO_DIR/ralph/bin/loop.sh" review
+    exec "$REPO_DIR/forgeloop/bin/loop.sh" review
     ;;
   tasks)
-    exec "$REPO_DIR/ralph/bin/loop-tasks.sh" "${2:-10}"
+    exec "$REPO_DIR/forgeloop/bin/loop-tasks.sh" "${2:-10}"
     ;;
   sync-skills)
     shift
-    exec "$REPO_DIR/ralph/bin/sync-skills.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/sync-skills.sh" "$@"
     ;;
   daemon)
-    exec "$REPO_DIR/ralph/bin/ralph-daemon.sh" "${2:-300}"
+    exec "$REPO_DIR/forgeloop/bin/forgeloop-daemon.sh" "${2:-300}"
     ;;
   ask)
     shift
-    exec "$REPO_DIR/ralph/bin/ask.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/ask.sh" "$@"
     ;;
   notify)
     shift
-    exec "$REPO_DIR/ralph/bin/notify.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/notify.sh" "$@"
     ;;
   kickoff)
     shift
-    exec "$REPO_DIR/ralph/bin/kickoff.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/kickoff.sh" "$@"
     ;;
   ingest)
     shift
-    exec "$REPO_DIR/ralph/bin/ingest-report.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/ingest-report.sh" "$@"
     ;;
   ingest-logs)
     shift
-    exec "$REPO_DIR/ralph/bin/ingest-logs.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/ingest-logs.sh" "$@"
     ;;
   session-start)
-    exec "$REPO_DIR/ralph/bin/session-start.sh"
+    exec "$REPO_DIR/forgeloop/bin/session-start.sh"
     ;;
   session-end)
     shift
-    exec "$REPO_DIR/ralph/bin/session-end.sh" "$@"
+    exec "$REPO_DIR/forgeloop/bin/session-end.sh" "$@"
     ;;
   ""|-h|--help)
     usage
@@ -419,14 +419,14 @@ case "$cmd" in
     exit 1
     ;;
 esac
-RALPH_WRAPPER_SH
+FORGELOOP_WRAPPER_SH
 
     chmod +x "$wrapper_path"
     echo "write: $wrapper_path"
 }
 
 main() {
-    echo "Installing Ralph framework into: $TARGET_REPO_DIR"
+    echo "Installing Forgeloop framework into: $TARGET_REPO_DIR"
 
     copy_kit
 
@@ -485,8 +485,8 @@ main() {
     echo "Done."
     echo "Next (in the target repo):"
     echo "  cd \"$TARGET_REPO_DIR\""
-    echo "  ./ralph/bin/loop.sh plan 1"
-    echo "  ./ralph/bin/loop.sh 5"
+    echo "  ./forgeloop/bin/loop.sh plan 1"
+    echo "  ./forgeloop/bin/loop.sh 5"
 }
 
 main

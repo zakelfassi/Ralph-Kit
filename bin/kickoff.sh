@@ -6,11 +6,11 @@ usage() {
 Generate a kickoff prompt for a memory-backed agent to author docs/specs for a greenfield repo.
 
 Usage:
-  ./ralph/bin/kickoff.sh "<project brief>" [--project <name>] [--seed <path-or-url>] [--notes <text>] [--out <path>]
+  ./forgeloop/bin/kickoff.sh "<project brief>" [--project <name>] [--seed <path-or-url>] [--notes <text>] [--out <path>]
 
 Examples:
-  ./ralph/bin/kickoff.sh "A private, project-scoped stories app" --project gablus
-  ./ralph/bin/kickoff.sh "CLI to sync Notion docs to MD" --seed https://github.com/acme/old-repo
+  ./forgeloop/bin/kickoff.sh "A private, project-scoped stories app" --project gablus
+  ./forgeloop/bin/kickoff.sh "CLI to sync Notion docs to MD" --seed https://github.com/acme/old-repo
 
 Notes:
 - This writes a file you paste into a memory-backed agent (ChatGPT Projects, Claude Projects, etc.).
@@ -65,31 +65,31 @@ done
 
 mkdir -p "$(dirname "$OUT_PATH")"
 
-cat > "$OUT_PATH" <<RALPH_KICKOFF_PROMPT
+cat > "$OUT_PATH" <<FORGELOOP_KICKOFF_PROMPT
 # Kickoff Prompt (Memory-Backed Requirements Agent)
 
 You are a senior product+engineering spec writer.
 
-You have access to long-term memory / prior project context (if available). Use it to write high-signal docs/specs for a NEW repository that will be built using a Ralph-style loop.
+You have access to long-term memory / prior project context (if available). Use it to write high-signal docs/specs for a NEW repository that will be built using a Forgeloop-style loop.
 
 ## Project
 - Name: $PROJECT_NAME
 - Brief: $PROJECT_BRIEF
-RALPH_KICKOFF_PROMPT
+FORGELOOP_KICKOFF_PROMPT
 
 if [ -n "$SEED_SOURCE" ]; then
-  cat >> "$OUT_PATH" <<RALPH_KICKOFF_PROMPT
+  cat >> "$OUT_PATH" <<FORGELOOP_KICKOFF_PROMPT
 - Seed source (optional): $SEED_SOURCE
-RALPH_KICKOFF_PROMPT
+FORGELOOP_KICKOFF_PROMPT
 fi
 
 if [ -n "$EXTRA_NOTES" ]; then
-  cat >> "$OUT_PATH" <<RALPH_KICKOFF_PROMPT
+  cat >> "$OUT_PATH" <<FORGELOOP_KICKOFF_PROMPT
 - Notes: $EXTRA_NOTES
-RALPH_KICKOFF_PROMPT
+FORGELOOP_KICKOFF_PROMPT
 fi
 
-cat >> "$OUT_PATH" <<'RALPH_KICKOFF_PROMPT'
+cat >> "$OUT_PATH" <<'FORGELOOP_KICKOFF_PROMPT'
 
 ## Your job
 Create/overwrite the project’s documentation and specifications so that a coding agent can plan + build deterministically.
@@ -126,6 +126,6 @@ Each `specs/*.md` should include:
 
 ## Output format
 Return a single patch in a code block (unified diff) that the user can apply with `git apply`.
-RALPH_KICKOFF_PROMPT
+FORGELOOP_KICKOFF_PROMPT
 
 echo "Wrote kickoff prompt: $OUT_PATH"

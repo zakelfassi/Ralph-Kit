@@ -1,6 +1,6 @@
 # Specs
 
-Ralph uses `specs/` as the source of truth for what to build.
+Forgeloop uses `specs/` as the source of truth for what to build.
 
 Tips:
 - Keep specs implementation-ready: inputs/outputs, edge cases, errors, acceptance criteria.

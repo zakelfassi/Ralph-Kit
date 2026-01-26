@@ -3,11 +3,11 @@
 # Session End Hook
 # =============================================================================
 # Captures knowledge from the session and updates the knowledge base.
-# Called after a Ralph loop completes or manually at session end.
+# Called after a Forgeloop loop completes or manually at session end.
 #
 # Usage:
-#   ./ralph/bin/session-end.sh [--capture "decision|pattern|preference|insight"]
-#   ./ralph/bin/session-end.sh --update-access
+#   ./forgeloop/bin/session-end.sh [--capture "decision|pattern|preference|insight"]
+#   ./forgeloop/bin/session-end.sh --update-access
 #
 # Features:
 #   - Updates "last_accessed" dates for used knowledge
@@ -21,13 +21,13 @@ set -euo pipefail
 # Resolve paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-RALPH_DIR="$REPO_DIR/ralph"
+FORGELOOP_DIR="$REPO_DIR/forgeloop"
 
-if [[ ! -f "$RALPH_DIR/lib/core.sh" ]]; then
-    RALPH_DIR="$REPO_DIR"
+if [[ ! -f "$FORGELOOP_DIR/lib/core.sh" ]]; then
+    FORGELOOP_DIR="$REPO_DIR"
 fi
 
-source "$RALPH_DIR/lib/core.sh" 2>/dev/null || true
+source "$FORGELOOP_DIR/lib/core.sh" 2>/dev/null || true
 
 KNOWLEDGE_DIR="$REPO_DIR/system/knowledge"
 TODAY=$(date '+%Y-%m-%d')
@@ -255,8 +255,8 @@ update_last_accessed() {
 # =============================================================================
 
 check_decay() {
-    local stale_threshold="${RALPH_STALE_THRESHOLD_DAYS:-90}"
-    local unverified_threshold="${RALPH_UNVERIFIED_THRESHOLD_DAYS:-60}"
+    local stale_threshold="${FORGELOOP_STALE_THRESHOLD_DAYS:-90}"
+    local unverified_threshold="${FORGELOOP_UNVERIFIED_THRESHOLD_DAYS:-60}"
 
     echo "Checking for stale entries..."
 

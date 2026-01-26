@@ -2,52 +2,52 @@
 set -euo pipefail
 
 # =============================================================================
-# Ralph Daemon (Portable, Hardened)
+# Forgeloop Daemon (Portable, Hardened)
 # =============================================================================
-# Periodically runs Ralph planning/build based on REQUESTS.md and IMPLEMENTATION_PLAN.md.
+# Periodically runs Forgeloop planning/build based on REQUESTS.md and IMPLEMENTATION_PLAN.md.
 #
 # HARDENED: Detects repeated blockers and pauses instead of looping endlessly.
 #
-# Usage: ./ralph/bin/ralph-daemon.sh [interval_seconds]
+# Usage: ./forgeloop/bin/forgeloop-daemon.sh [interval_seconds]
 # Default interval: 300 (5 minutes)
 #
 # Triggers (in REQUESTS.md):
 #   [PAUSE]   - pause daemon loop
 #   [REPLAN]  - run planning once, then continue
-#   [DEPLOY]  - run deploy command (RALPH_DEPLOY_CMD), if configured
-#   [INGEST_LOGS] - analyze configured logs and append a request (RALPH_INGEST_LOGS_CMD or RALPH_INGEST_LOGS_FILE)
+#   [DEPLOY]  - run deploy command (FORGELOOP_DEPLOY_CMD), if configured
+#   [INGEST_LOGS] - analyze configured logs and append a request (FORGELOOP_INGEST_LOGS_CMD or FORGELOOP_INGEST_LOGS_FILE)
 # =============================================================================
 
 INTERVAL=${1:-300}
 
 # Resolve repo directory and load libraries
 REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-RALPH_DIR="$REPO_DIR/ralph"
-if [[ ! -f "$RALPH_DIR/lib/core.sh" ]]; then
-    RALPH_DIR="$REPO_DIR"
+FORGELOOP_DIR="$REPO_DIR/forgeloop"
+if [[ ! -f "$FORGELOOP_DIR/lib/core.sh" ]]; then
+    FORGELOOP_DIR="$REPO_DIR"
 fi
-source "$RALPH_DIR/config.sh" 2>/dev/null || true
-source "$RALPH_DIR/lib/core.sh"
+source "$FORGELOOP_DIR/config.sh" 2>/dev/null || true
+source "$FORGELOOP_DIR/lib/core.sh"
 
 # Setup runtime directories and paths
-RUNTIME_DIR=$(ralph_core__ensure_runtime_dirs "$REPO_DIR")
-LOG_FILE="${RALPH_DAEMON_LOG_FILE:-$RUNTIME_DIR/logs/daemon.log}"
-LOCK_FILE="${RALPH_DAEMON_LOCK_FILE:-$RUNTIME_DIR/daemon.lock}"
+RUNTIME_DIR=$(forgeloop_core__ensure_runtime_dirs "$REPO_DIR")
+LOG_FILE="${FORGELOOP_DAEMON_LOG_FILE:-$RUNTIME_DIR/logs/daemon.log}"
+LOCK_FILE="${FORGELOOP_DAEMON_LOCK_FILE:-$RUNTIME_DIR/daemon.lock}"
 STATE_FILE="$RUNTIME_DIR/daemon.state"
 
-REQUESTS_FILE="${RALPH_REQUESTS_FILE:-REQUESTS.md}"
-PLAN_FILE="${RALPH_IMPLEMENTATION_PLAN_FILE:-IMPLEMENTATION_PLAN.md}"
-QUESTIONS_FILE="${RALPH_QUESTIONS_FILE:-QUESTIONS.md}"
+REQUESTS_FILE="${FORGELOOP_REQUESTS_FILE:-REQUESTS.md}"
+PLAN_FILE="${FORGELOOP_IMPLEMENTATION_PLAN_FILE:-IMPLEMENTATION_PLAN.md}"
+QUESTIONS_FILE="${FORGELOOP_QUESTIONS_FILE:-QUESTIONS.md}"
 
 # Blocker detection settings
-MAX_BLOCKED_ITERATIONS="${RALPH_MAX_BLOCKED_ITERATIONS:-3}"
-BLOCKER_PAUSE_SECONDS="${RALPH_BLOCKER_PAUSE_SECONDS:-1800}"  # 30 minutes
+MAX_BLOCKED_ITERATIONS="${FORGELOOP_MAX_BLOCKED_ITERATIONS:-3}"
+BLOCKER_PAUSE_SECONDS="${FORGELOOP_BLOCKER_PAUSE_SECONDS:-1800}"  # 30 minutes
 BLOCKED_ITERATION_COUNT=0
 LAST_BLOCKER_HASH=""
 
 # Convenience wrappers
-log() { ralph_core__log "$1" "$LOG_FILE"; }
-notify() { ralph_core__notify "$REPO_DIR" "$@"; }
+log() { forgeloop_core__log "$1" "$LOG_FILE"; }
+notify() { forgeloop_core__notify "$REPO_DIR" "$@"; }
 
 # =============================================================================
 # State Persistence
@@ -78,20 +78,17 @@ get_blocker_hash() {
     if [ -f "$questions_path" ]; then
         # Hash the unanswered question IDs without blocking on stdin
         local blocker_ids
-        blocker_ids=$(grep -E '^## Q-[0-9]+' "$questions_path" 2>/dev/null | \
-            while read -r line; do
-                local qid
-                qid=$(echo "$line" | grep -oE 'Q-[0-9]+')
-                # Check if this question is still awaiting response
-                if grep -A5 "$qid" "$questions_path" 2>/dev/null | grep -q "⏳ Awaiting response"; then
-                    echo "$qid"
-                fi
-            done | sort)
+        blocker_ids=$(awk '
+            /^## Q-[0-9]+/ { qid=$2; awaiting=0; next }
+            /^## / { if (qid != "" && awaiting==1) print qid; qid=""; awaiting=0; next }
+            /⏳ Awaiting response/ { if (qid != "") awaiting=1 }
+            END { if (qid != "" && awaiting==1) print qid }
+        ' "$questions_path" 2>/dev/null | sort)
 
         if [[ -z "$blocker_ids" ]]; then
             echo "none"
         else
-            ralph_core__hash "$blocker_ids"
+            forgeloop_core__hash "$blocker_ids"
         fi
     else
         echo "none"
@@ -135,7 +132,7 @@ check_blocker_loop() {
 pause_for_blocker() {
     local pause_mins=$((BLOCKER_PAUSE_SECONDS / 60))
     log "Stuck on same blocker for $BLOCKED_ITERATION_COUNT iterations. Pausing for ${pause_mins}m..."
-    notify "⏸️" "Ralph Paused - Awaiting Input" \
+    notify "⏸️" "Forgeloop Paused - Awaiting Input" \
         "Stuck on same blocker for $BLOCKED_ITERATION_COUNT iterations. Pausing for ${pause_mins}m. Check QUESTIONS.md for unanswered questions."
 
     sleep "$BLOCKER_PAUSE_SECONDS"
@@ -147,7 +144,7 @@ pause_for_blocker() {
 }
 
 is_paused() {
-    ralph_core__has_flag "$REPO_DIR" "$REQUESTS_FILE" "PAUSE"
+    forgeloop_core__has_flag "$REPO_DIR" "$REQUESTS_FILE" "PAUSE"
 }
 
 has_pending_tasks() {
@@ -156,30 +153,30 @@ has_pending_tasks() {
 
 run_plan() {
     log "Running planning..."
-    notify "📋" "Ralph Planning" "Starting plan"
-    (cd "$REPO_DIR" && "$REPO_DIR/ralph/bin/loop.sh" plan 1) || true
+    notify "📋" "Forgeloop Planning" "Starting plan"
+    (cd "$REPO_DIR" && "$REPO_DIR/forgeloop/bin/loop.sh" plan 1) || true
 }
 
 run_build() {
     local iters="${1:-10}"
     log "Running build ($iters iterations)..."
-    notify "🔨" "Ralph Build" "Starting build ($iters iterations)"
-    (cd "$REPO_DIR" && "$REPO_DIR/ralph/bin/loop.sh" "$iters") || true
+    notify "🔨" "Forgeloop Build" "Starting build ($iters iterations)"
+    (cd "$REPO_DIR" && "$REPO_DIR/forgeloop/bin/loop.sh" "$iters") || true
 }
 
 run_deploy() {
-    if [ -z "${RALPH_DEPLOY_CMD:-}" ]; then
-        log "DEPLOY requested but RALPH_DEPLOY_CMD not set; skipping"
-        notify "⚠️" "Ralph Deploy" "DEPLOY requested but no deploy command configured"
+    if [ -z "${FORGELOOP_DEPLOY_CMD:-}" ]; then
+        log "DEPLOY requested but FORGELOOP_DEPLOY_CMD not set; skipping"
+        notify "⚠️" "Forgeloop Deploy" "DEPLOY requested but no deploy command configured"
         return 0
     fi
 
-    log "Running deploy: $RALPH_DEPLOY_CMD"
-    notify "🚀" "Ralph Deploy" "Running deploy"
-    (cd "$REPO_DIR" && bash -lc "$RALPH_DEPLOY_CMD") || true
+    log "Running deploy: $FORGELOOP_DEPLOY_CMD"
+    notify "🚀" "Forgeloop Deploy" "Running deploy"
+    (cd "$REPO_DIR" && bash -lc "$FORGELOOP_DEPLOY_CMD") || true
 
-    if [[ "${RALPH_POST_DEPLOY_INGEST_LOGS:-false}" == "true" ]]; then
-        local wait_seconds="${RALPH_POST_DEPLOY_OBSERVE_SECONDS:-0}"
+    if [[ "${FORGELOOP_POST_DEPLOY_INGEST_LOGS:-false}" == "true" ]]; then
+        local wait_seconds="${FORGELOOP_POST_DEPLOY_OBSERVE_SECONDS:-0}"
         if [[ "$wait_seconds" =~ ^[0-9]+$ ]] && [[ "$wait_seconds" -gt 0 ]]; then
             log "Post-deploy observe: waiting ${wait_seconds}s before ingesting logs..."
             sleep "$wait_seconds"
@@ -189,38 +186,38 @@ run_deploy() {
 }
 
 run_ingest_logs() {
-    local ingest_script="$REPO_DIR/ralph/bin/ingest-logs.sh"
+    local ingest_script="$REPO_DIR/forgeloop/bin/ingest-logs.sh"
     if [[ ! -x "$ingest_script" ]]; then
         log "INGEST_LOGS requested but ingest-logs.sh not found/executable; skipping"
-        notify "⚠️" "Ralph Log Ingest" "INGEST_LOGS requested but ingest-logs.sh not available"
+        notify "⚠️" "Forgeloop Log Ingest" "INGEST_LOGS requested but ingest-logs.sh not available"
         return 0
     fi
 
-    if [[ -z "${RALPH_INGEST_LOGS_CMD:-}" ]] && [[ -z "${RALPH_INGEST_LOGS_FILE:-}" ]]; then
-        log "INGEST_LOGS requested but RALPH_INGEST_LOGS_CMD / RALPH_INGEST_LOGS_FILE not set; skipping"
-        notify "⚠️" "Ralph Log Ingest" "INGEST_LOGS requested but no log source configured"
+    if [[ -z "${FORGELOOP_INGEST_LOGS_CMD:-}" ]] && [[ -z "${FORGELOOP_INGEST_LOGS_FILE:-}" ]]; then
+        log "INGEST_LOGS requested but FORGELOOP_INGEST_LOGS_CMD / FORGELOOP_INGEST_LOGS_FILE not set; skipping"
+        notify "⚠️" "Forgeloop Log Ingest" "INGEST_LOGS requested but no log source configured"
         return 0
     fi
 
     local args=(--requests "$REQUESTS_FILE")
-    if [[ -n "${RALPH_INGEST_LOGS_CMD:-}" ]]; then
-        args+=(--cmd "$RALPH_INGEST_LOGS_CMD" --source "daemon")
+    if [[ -n "${FORGELOOP_INGEST_LOGS_CMD:-}" ]]; then
+        args+=(--cmd "$FORGELOOP_INGEST_LOGS_CMD" --source "daemon")
     else
-        args+=(--file "$RALPH_INGEST_LOGS_FILE" --source "daemon")
+        args+=(--file "$FORGELOOP_INGEST_LOGS_FILE" --source "daemon")
     fi
 
-    if [[ -n "${RALPH_INGEST_LOGS_TAIL:-}" ]]; then
-        args+=(--tail "$RALPH_INGEST_LOGS_TAIL")
+    if [[ -n "${FORGELOOP_INGEST_LOGS_TAIL:-}" ]]; then
+        args+=(--tail "$FORGELOOP_INGEST_LOGS_TAIL")
     fi
 
     log "Running log ingest..."
-    notify "📥" "Ralph Log Ingest" "Analyzing logs into REQUESTS"
+    notify "📥" "Forgeloop Log Ingest" "Analyzing logs into REQUESTS"
     (cd "$REPO_DIR" && "$ingest_script" "${args[@]}") || true
 }
 
 main_loop() {
     load_state
-    log "Ralph daemon starting (interval: ${INTERVAL}s)"
+    log "Forgeloop daemon starting (interval: ${INTERVAL}s)"
     log "Blocker detection: max $MAX_BLOCKED_ITERATIONS consecutive blocked iterations before ${BLOCKER_PAUSE_SECONDS}s pause"
 
     exec 200>"$LOCK_FILE"
@@ -229,7 +226,7 @@ main_loop() {
         exit 0
     fi
 
-    notify "🤖" "Ralph Daemon Started" "Interval: ${INTERVAL}s"
+    notify "🤖" "Forgeloop Daemon Started" "Interval: ${INTERVAL}s"
 
     while true; do
         if is_paused; then
@@ -244,15 +241,15 @@ main_loop() {
             continue
         fi
 
-        if ralph_core__consume_flag "$REPO_DIR" "$REQUESTS_FILE" "REPLAN"; then
+        if forgeloop_core__consume_flag "$REPO_DIR" "$REQUESTS_FILE" "REPLAN"; then
             run_plan
         fi
 
-        if ralph_core__consume_flag "$REPO_DIR" "$REQUESTS_FILE" "DEPLOY"; then
+        if forgeloop_core__consume_flag "$REPO_DIR" "$REQUESTS_FILE" "DEPLOY"; then
             run_deploy
         fi
 
-        if ralph_core__consume_flag "$REPO_DIR" "$REQUESTS_FILE" "INGEST_LOGS"; then
+        if forgeloop_core__consume_flag "$REPO_DIR" "$REQUESTS_FILE" "INGEST_LOGS"; then
             run_ingest_logs
         fi
 

@@ -17,12 +17,12 @@ Do not advance past a gate without meeting it.
 ## Loop
 
 1. Choose the next unit of work
-   - The top unchecked Ralph task / the next `passes:false` task.
+   - The top unchecked Forgeloop task / the next `passes:false` task.
 
 2. Preflight (skill opportunity)
    - Ask: "Is there a reusable procedure I'm about to repeat?"
    - If yes, use `skillforge` to create/update a focused skill.
-   - Sync skills (`./ralph/bin/sync-skills.sh`) so the agent can use them.
+   - Sync skills (`./forgeloop/bin/sync-skills.sh`) so the agent can use them.
 
 3. Execute conservatively
    - Prefer tiny diffs.

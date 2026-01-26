@@ -26,7 +26,7 @@ Create well-formed Skills quickly and consistently.
 
 4. Create the skill folder
    - Recommended (project skills): `skills/<type>/<name>/`
-   - Optional (kit skills): `ralph/skills/<type>/<name>/` only when you are changing the kit itself
+   - Optional (kit skills): `forgeloop/skills/<type>/<name>/` only when you are changing the kit itself
    - Required: `SKILL.md`
    - Optional: `scripts/`, `references/`, `assets/`
 
@@ -37,7 +37,7 @@ Create well-formed Skills quickly and consistently.
 
 6. Sync skills into your agents
    - After adding/updating skills, run:
-     - `./ralph/bin/sync-skills.sh` (Claude Code mirror + optional Codex install)
+     - `./forgeloop/bin/sync-skills.sh` (Claude Code mirror + optional Codex install)
 
 ## Minimal SKILL.md skeleton
 

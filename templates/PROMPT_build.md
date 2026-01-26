@@ -1,4 +1,4 @@
-# Ralph Build Prompt
+# Forgeloop Build Prompt
 
 ## Context Loading
 
@@ -7,7 +7,7 @@
 0c. Study `docs/*` for product requirements, design specs, and architecture decisions.
 0d. For reference, study the source code in `src/*`, `apps/*`, `packages/*`, and other relevant folders.
 0e. CHECK @QUESTIONS.md for answered questions (Status: ✅ Answered). If you previously asked a question and it's been answered, read it and proceed accordingly. Mark it as ✅ Resolved after acting on it.
-0f. **Skill Forge preflight (always):** Before starting the task, decide if this work would benefit from a reusable Skill (a short procedural guide or tool wrapper you’ll reuse). If yes, create/update a focused Skill under `skills/<type>/<name>/SKILL.md` (repo-root) and then run `./ralph/bin/sync-skills.sh` to refresh agent discovery. (Avoid editing `ralph/skills` unless you’re changing the kit itself.)
+0f. **Skill Forge preflight (always):** Before starting the task, decide if this work would benefit from a reusable Skill (a short procedural guide or tool wrapper you’ll reuse). If yes, create/update a focused Skill under `skills/<type>/<name>/SKILL.md` (repo-root) and then run `./forgeloop/bin/sync-skills.sh` to refresh agent discovery. (Avoid editing `forgeloop/skills` unless you’re changing the kit itself.)
 
 ## Your Mission
 
@@ -57,11 +57,11 @@ Adjust commands based on what's in `AGENTS.md` for this project.
 - **decision**: Multiple valid approaches exist
 - **review**: Want feedback before implementing
 
-Use `./ralph/bin/ask.sh`:
+Use `./forgeloop/bin/ask.sh`:
 ```bash
-./ralph/bin/ask.sh "blocked" "Detailed question here"
-./ralph/bin/ask.sh "clarification" "What does X mean in spec Y?"
-./ralph/bin/ask.sh "decision" "Should we use approach A or B?"
+./forgeloop/bin/ask.sh "blocked" "Detailed question here"
+./forgeloop/bin/ask.sh "clarification" "What does X mean in spec Y?"
+./forgeloop/bin/ask.sh "decision" "Should we use approach A or B?"
 ```
 
 Then STOP and wait for the answer. Do not continue guessing.

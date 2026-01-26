@@ -5,7 +5,7 @@ description: "Convert a PRD markdown file to prd.json for execution. Triggers on
 
 # Tasks - Convert PRD to JSON Format
 
-Converts a PRD markdown document into the prd.json format for Ralph's tasks lane execution loop.
+Converts a PRD markdown document into the prd.json format for Forgeloop's tasks lane execution loop.
 
 ---
 
@@ -103,7 +103,7 @@ Create `prd.json` in repo root:
 ```json
 {
   "project": "Project Name",
-  "branchName": "ralph/[feature-name]",
+  "branchName": "forgeloop/[feature-name]",
   "description": "[One-line description from PRD]",
   "tasks": [
     {
@@ -311,11 +311,11 @@ Save the file immediately, then output a brief summary:
 
 ---
 
-## Integration with Ralph
+## Integration with Forgeloop
 
 After creating `prd.json`:
 
-1. Run the tasks lane: `./ralph.sh tasks` or `./ralph/bin/loop-tasks.sh`
+1. Run the tasks lane: `./forgeloop.sh tasks` or `./forgeloop/bin/loop-tasks.sh`
 2. Progress is tracked in `progress.txt`
 3. Each task sets `passes: true` when complete
 4. Loop continues until all tasks pass
@@ -337,7 +337,7 @@ After creating `prd.json`:
 ```json
 {
   "project": "MyProject",
-  "branchName": "ralph/fix-signup",
+  "branchName": "forgeloop/fix-signup",
   "description": "Fix broken signup page",
   "tasks": [
     {

@@ -1,11 +1,11 @@
 # Project Operational Guide
 
-This file contains project-specific guidance for Ralph. Keep it brief and operational.
+This file contains project-specific guidance for Forgeloop. Keep it brief and operational.
 
 ## Project Structure
 ```
-specs/           # Feature specifications (Ralph reads these)
-docs/            # Product/tech docs (Ralph reads these)
+specs/           # Feature specifications (Forgeloop reads these)
+docs/            # Product/tech docs (Forgeloop reads these)
 src/             # Source code (adjust paths as needed)
 system/knowledge # Persistent session memory (decisions, patterns, preferences, insights)
 system/experts   # Domain expert guidance (architecture, security, testing, etc.)
@@ -47,18 +47,18 @@ Load relevant experts from `system/experts/` based on task keywords:
 <!-- Add discovered patterns here as you work -->
 - Prefer small, focused commits
 - Update `IMPLEMENTATION_PLAN.md` when scope changes
-- Use `./ralph/bin/ask.sh` when blocked or decisions needed
+- Use `./forgeloop/bin/ask.sh` when blocked or decisions needed
 
 ## Modes
 
 **Checklist Lane** (default):
 - Uses `IMPLEMENTATION_PLAN.md` as the task list
-- Run: `./ralph.sh plan` then `./ralph.sh build`
+- Run: `./forgeloop.sh plan` then `./forgeloop.sh build`
 - Progress in `STATUS.md` and `CHANGELOG.md`
 
 **Tasks Lane** (optional):
 - Uses `prd.json` for machine-readable task tracking
-- Run: `./ralph.sh tasks` or `./ralph/bin/loop-tasks.sh`
+- Run: `./forgeloop.sh tasks` or `./forgeloop/bin/loop-tasks.sh`
 - Progress in `progress.txt`
 
 ## Important Notes

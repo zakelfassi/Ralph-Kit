@@ -1,13 +1,13 @@
-# Ralph Kit
+# Forgeloop
 
-Ralph Kit is a portable **implementation + augmentation** of the Ralph workflow, packaged so you can drop it into any repo.
+Forgeloop is a portable **agentic build loop** framework, packaged so you can drop it into any repo.
 
-In plain English, Ralph is a loop that:
+In plain English, Forgeloop is a loop that:
 1. **Kickoff** (optional): write clear docs/specs for a new project.
 2. **Plan**: translate specs into a prioritized, test-aware task list.
 3. **Build**: execute tasks with backpressure (tests/typecheck/lint), updating plan/status as you go.
 
-Ralph Kit adds the scaffolding, prompts, and tooling to make that loop repeatable in real codebases — plus **Skills-Driven Development**: forge reusable agent Skills as you build, and grow a repo-specific “skill factory”.
+Forgeloop adds the scaffolding, prompts, and tooling to make that loop repeatable in real codebases — plus **Skills-Driven Development**: forge reusable agent Skills as you build, and grow a repo-specific “skill factory”.
 
 **Inspiration & Sources:**
 - [how-to-ralph-wiggum](https://github.com/ghuntley/how-to-ralph-wiggum) - The original Ralph methodology playbook by Geoff Huntley
@@ -16,7 +16,7 @@ Ralph Kit adds the scaffolding, prompts, and tooling to make that loop repeatabl
 
 **Links:**
 - This repo: scripts + markdown templates you can apply to any codebase
-- Landing page: https://ralphkit.zakelfassi.com
+- Landing page: https://forgeloop.zakelfassi.com
 
 ## How the Workflow Works
 
@@ -81,13 +81,13 @@ flowchart LR
 - **Expert routing**: domain experts (architecture, security, testing, etc.) are loaded based on task keywords.
 
 ## What it adds (augmentations)
-- **Portable kit** vendorable as `ralph/` into any repo
+- **Portable kit** vendorable as `forgeloop/` into any repo
 - **Multi-model routing** (Codex for plan/review/security; Claude for build) + optional failover
 - **Shared libraries** (`lib/core.sh`, `lib/llm.sh`) with rate-limiting, logging, notifications, and model failover
 - **Two workflow lanes**: Checklist (IMPLEMENTATION_PLAN.md) or Tasks (prd.json with passes flags)
 - **`plan-work` mode** for branch-scoped planning (avoids unreliable "filter tasks at runtime")
-- **Safer defaults**: `RALPH_AUTOPUSH=false` by default
-- **Runtime isolation**: logs/state in `.ralph/` (auto gitignored by installer)
+- **Safer defaults**: `FORGELOOP_AUTOPUSH=false` by default
+- **Runtime isolation**: logs/state in `.forgeloop/` (auto gitignored by installer)
 - **Greenfield kickoff** helper to generate docs/specs via a memory-backed agent
 - **Report ingestion** (`ingest-report.sh`) to convert analysis reports into requests
 - **Log ingestion** (`ingest-logs.sh`) to turn runtime errors/logs into actionable requests (optional daemon trigger: `[INGEST_LOGS]`)
@@ -110,16 +110,16 @@ Install the kit:
 Then run a loop in the target repo:
 ```bash
 cd /path/to/target-repo
-./ralph.sh sync-skills      # refresh repo-scoped skill mirrors (.claude/skills; .codex/skills when writable)
-./ralph.sh plan 1
-./ralph.sh build 10
+./forgeloop.sh sync-skills      # refresh repo-scoped skill mirrors (.claude/skills; .codex/skills when writable)
+./forgeloop.sh plan 1
+./forgeloop.sh build 10
 ```
 
 **Note:** `sync-skills` warns if a destination exists and is not a symlink (e.g., your custom skill directory). Use `--force-symlinks` to overwrite.
 
 Or use the tasks lane with `prd.json`:
 ```bash
-./ralph.sh tasks 10
+./forgeloop.sh tasks 10
 ```
 
 If you're starting from scratch, run a kickoff to generate docs/specs first (see below).
@@ -131,9 +131,9 @@ From this repo:
 ./install.sh /path/to/target-repo --wrapper
 ```
 
-If the kit is already vendored in a target repo at `./ralph`:
+If the kit is already vendored in a target repo at `./forgeloop`:
 ```bash
-./ralph/install.sh --wrapper
+./forgeloop/install.sh --wrapper
 ```
 
 ### Conflict Handling
@@ -159,7 +159,7 @@ For projects starting from scratch, generate a prompt you can paste into a memor
 
 ```bash
 cd /path/to/target-repo
-./ralph.sh kickoff "<one paragraph project brief>"
+./forgeloop.sh kickoff "<one paragraph project brief>"
 ```
 
 - Guide: `docs/kickoff.md`
@@ -168,23 +168,23 @@ cd /path/to/target-repo
 
 **Checklist lane** (default):
 ```bash
-./ralph.sh plan 1        # Plan first iteration
-./ralph.sh build 10      # Build up to 10 iterations
+./forgeloop.sh plan 1        # Plan first iteration
+./forgeloop.sh build 10      # Build up to 10 iterations
 ```
 
 **Tasks lane** (prd.json-based):
 ```bash
-./ralph.sh tasks 10      # Execute prd.json tasks
+./forgeloop.sh tasks 10      # Execute prd.json tasks
 ```
 
 **Daemon mode** (watches for changes):
 ```bash
-./ralph.sh daemon 300    # Check every 5 minutes
+./forgeloop.sh daemon 300    # Check every 5 minutes
 ```
 
 **Ingest a report** (convert to requests):
 ```bash
-./ralph.sh ingest --report /path/to/report.md --mode request
+./forgeloop.sh ingest --report /path/to/report.md --mode request
 ```
 
 ## Run safely (GCP VM / Docker)
@@ -196,21 +196,21 @@ If you’re using auto-permissions (`--dangerously-skip-permissions`, `--full-au
 
 ## Workflow Lanes
 
-Ralph Kit supports two approaches to task tracking:
+Forgeloop supports two approaches to task tracking:
 
 ### Checklist Lane (default)
 Uses `IMPLEMENTATION_PLAN.md` with markdown checkboxes. Best for human-in-the-loop workflows where you want to review and modify the plan.
 
 ```bash
-./ralph.sh plan 1    # Generate plan
-./ralph.sh build 10  # Execute tasks
+./forgeloop.sh plan 1    # Generate plan
+./forgeloop.sh build 10  # Execute tasks
 ```
 
 ### Tasks Lane (optional)
 Uses `prd.json` with machine-readable `passes: true/false` flags. Best for full automation with structured task definitions.
 
 ```bash
-./ralph.sh tasks 10  # Execute prd.json tasks
+./forgeloop.sh tasks 10  # Execute prd.json tasks
 ```
 
 **Comparison:**
@@ -218,7 +218,7 @@ Uses `prd.json` with machine-readable `passes: true/false` flags. Best for full 
 |--------|---------------|------------|
 | Task file | `IMPLEMENTATION_PLAN.md` | `prd.json` |
 | Progress tracking | Markdown checkboxes | `passes: true/false` |
-| Run command | `./ralph.sh build N` | `./ralph.sh tasks N` |
+| Run command | `./forgeloop.sh build N` | `./forgeloop.sh tasks N` |
 | Best for | Human review/edits | Full automation |
 | Status tracking | `STATUS.md` | `progress.txt` |
 
@@ -238,9 +238,9 @@ system/knowledge/
 
 **Usage:**
 ```bash
-./ralph.sh session-start     # Load knowledge context before work
-./ralph.sh session-end       # Capture new knowledge after work
-./ralph.sh session-end --capture decision "Title" "Context" "Decision" "Consequences" "tags"
+./forgeloop.sh session-start     # Load knowledge context before work
+./forgeloop.sh session-end       # Capture new knowledge after work
+./forgeloop.sh session-end --capture decision "Title" "Context" "Decision" "Consequences" "tags"
 ```
 
 ## Domain Expert System (from marge-simpson)
@@ -262,8 +262,8 @@ Specialized guidance loaded based on task keywords. Located at `system/experts/`
 For simple one-shot tasks that don't need full planning overhead:
 
 ```bash
-./ralph.sh build --lite 1    # Uses AGENTS-lite.md
-./ralph.sh build --full 10   # Explicit full mode (default)
+./forgeloop.sh build --lite 1    # Uses AGENTS-lite.md
+./forgeloop.sh build --full 10   # Explicit full mode (default)
 ```
 
 Lite mode constraints:
@@ -276,17 +276,17 @@ Lite mode constraints:
 The kit includes reusable bash libraries under `lib/`:
 
 ### lib/core.sh
-- `ralph_core__log()` — Timestamped logging with levels (info, warn, error)
-- `ralph_core__notify()` — Slack webhook notifications (requires `SLACK_WEBHOOK_URL`)
-- `ralph_core__git_push_branch()` — Safe branch pushing with conflict handling
-- `ralph_core__consume_flag()` — Read and clear control flags from `REQUESTS.md`
-- `ralph_core__hash_content()` — Content hashing for idempotency checks
+- `forgeloop_core__log()` — Timestamped logging with levels (info, warn, error)
+- `forgeloop_core__notify()` — Slack webhook notifications (requires `SLACK_WEBHOOK_URL`)
+- `forgeloop_core__git_push_branch()` — Safe branch pushing with conflict handling
+- `forgeloop_core__consume_flag()` — Read and clear control flags from `REQUESTS.md`
+- `forgeloop_core__hash()` — String hashing for idempotency checks
+- `forgeloop_core__hash_file()` — File hashing for idempotency checks
 
 ### lib/llm.sh
-- `ralph_llm__run()` — Unified LLM execution with automatic model failover
+- `forgeloop_llm__exec()` — Unified LLM execution with automatic model failover
 - Supports both `claude` and `codex` CLIs
 - Rate-limiting with exponential backoff
-- Structured output support via JSON schemas
 - Optional Codex security/review gates
 
 ## Daemon Mode
@@ -294,7 +294,7 @@ The kit includes reusable bash libraries under `lib/`:
 The daemon watches for changes and runs loops automatically:
 
 ```bash
-./ralph.sh daemon 300  # Check every 5 minutes
+./forgeloop.sh daemon 300  # Check every 5 minutes
 ```
 
 **What it monitors:**
@@ -305,19 +305,19 @@ The daemon watches for changes and runs loops automatically:
 **Control flags:**
 - `[PAUSE]` — Stop the daemon loop until flag is removed
 - `[REPLAN]` — Trigger a re-planning pass before continuing build
-- `[DEPLOY]` — Run `RALPH_DEPLOY_CMD` after successful build
-- `[INGEST_LOGS]` — Run log ingestion (uses `RALPH_INGEST_LOGS_CMD` or `RALPH_INGEST_LOGS_FILE`)
+- `[DEPLOY]` — Run `FORGELOOP_DEPLOY_CMD` after successful build
+- `[INGEST_LOGS]` — Run log ingestion (uses `FORGELOOP_INGEST_LOGS_CMD` or `FORGELOOP_INGEST_LOGS_FILE`)
 
 **Blocker detection:**
 The daemon includes blocker detection to prevent infinite loops when the agent is stuck waiting for human input (e.g., unanswered questions in `QUESTIONS.md`).
 
 ## Config
 
-Edit `ralph/config.sh` (in the target repo) to set:
-- `RALPH_AUTOPUSH=true` if you want auto-push
-- `RALPH_TEST_CMD` (optional) to run after review auto-fixes
-- `RALPH_DEPLOY_CMD` (optional) used by the daemon on `[DEPLOY]`
-- `RALPH_INGEST_LOGS_CMD` or `RALPH_INGEST_LOGS_FILE` (optional) used by the daemon on `[INGEST_LOGS]`
+Edit `forgeloop/config.sh` (in the target repo) to set:
+- `FORGELOOP_AUTOPUSH=true` if you want auto-push
+- `FORGELOOP_TEST_CMD` (optional) to run after review auto-fixes
+- `FORGELOOP_DEPLOY_CMD` (optional) used by the daemon on `[DEPLOY]`
+- `FORGELOOP_INGEST_LOGS_CMD` or `FORGELOOP_INGEST_LOGS_FILE` (optional) used by the daemon on `[INGEST_LOGS]`
 
 ## Notes
 - Optional Slack integration uses `.env.local` with `SLACK_WEBHOOK_URL=...`.

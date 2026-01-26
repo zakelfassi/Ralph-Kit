@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Ralph Kit - GCP provisioner
+# Forgeloop - GCP provisioner
 #
 # Runs locally (your laptop) and:
 # - creates a GCE VM
-# - uploads this ralph-kit
+# - uploads this forgeloop
 # - bootstraps the VM with prerequisites + agent CLIs
 # - optionally installs API keys for full-auto mode
 #
@@ -14,7 +14,7 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Provision a Ralph-equipped GCP VM.
+Provision a Forgeloop-equipped GCP VM.
 
 Usage:
   ops/gcp/provision.sh [--name NAME] [--zone ZONE] [--machine-type TYPE] [--disk-size SIZE] [--project PROJECT] [--repo-url URL] [--dry-run]
@@ -25,16 +25,16 @@ Env (optional):
 
 Examples:
   # Minimal (no keys copied)
-  ops/gcp/provision.sh --name ralph-runner
+  ops/gcp/provision.sh --name forgeloop-runner
 
   # With keys (recommended for full-auto)
-  OPENAI_API_KEY=... ANTHROPIC_API_KEY=... ops/gcp/provision.sh --name ralph-runner
+  OPENAI_API_KEY=... ANTHROPIC_API_KEY=... ops/gcp/provision.sh --name forgeloop-runner
 
   # Provision and clone a target repo on the VM
-  ops/gcp/provision.sh --name ralph-runner --repo-url git@github.com:org/repo.git
+  ops/gcp/provision.sh --name forgeloop-runner --repo-url git@github.com:org/repo.git
 
 Notes:
-- API keys are uploaded to the VM and stored at /etc/ralph/keys.env (mode 600).
+- API keys are uploaded to the VM and stored at /etc/forgeloop/keys.env (mode 600).
 - Prefer a dedicated VM/project with least-privilege keys.
 USAGE
 }
@@ -42,7 +42,7 @@ USAGE
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 KIT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-NAME="ralph-runner"
+NAME="forgeloop-runner"
 ZONE="us-central1-a"
 MACHINE_TYPE="e2-standard-4"
 DISK_SIZE="100GB"
@@ -110,8 +110,8 @@ TMP_DIR="$(mktemp -d)"
 cleanup() { rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
 
-KIT_TAR="$TMP_DIR/ralph-kit.tgz"
-SECRETS_FILE="$TMP_DIR/ralph-secrets.env"
+KIT_TAR="$TMP_DIR/forgeloop.tgz"
+SECRETS_FILE="$TMP_DIR/forgeloop-secrets.env"
 
 # Create tarball (exclude .git)
 ( cd "$KIT_DIR" && tar --exclude='.git' --exclude='.DS_Store' -czf "$KIT_TAR" . )
@@ -145,7 +145,7 @@ else
 fi
 
 # Upload kit tar
-scp_cmd=(gcloud compute scp --project "$PROJECT" --zone "$ZONE" "$KIT_TAR" "$NAME:~/ralph-kit.tgz")
+scp_cmd=(gcloud compute scp --project "$PROJECT" --zone "$ZONE" "$KIT_TAR" "$NAME:~/forgeloop.tgz")
 if [ "$DRY_RUN" = "true" ]; then
   printf 'DRY RUN: %q ' "${scp_cmd[@]}"; echo
 else
@@ -154,7 +154,7 @@ fi
 
 # Upload secrets (optional)
 if [ "$HAS_KEYS" = "true" ]; then
-  scp_keys_cmd=(gcloud compute scp --project "$PROJECT" --zone "$ZONE" "$SECRETS_FILE" "$NAME:~/ralph-secrets.env")
+  scp_keys_cmd=(gcloud compute scp --project "$PROJECT" --zone "$ZONE" "$SECRETS_FILE" "$NAME:~/forgeloop-secrets.env")
   if [ "$DRY_RUN" = "true" ]; then
     printf 'DRY RUN: %q ' "${scp_keys_cmd[@]}"; echo
   else
@@ -167,9 +167,9 @@ fi
 # Extract kit to /opt and run bootstrap
 remote_bootstrap=$(cat <<'REMOTE'
 set -euo pipefail
-sudo mkdir -p /opt/ralph-kit
-sudo tar -xzf "$HOME/ralph-kit.tgz" -C /opt/ralph-kit
-sudo bash /opt/ralph-kit/ops/gcp/bootstrap.sh
+sudo mkdir -p /opt/forgeloop
+sudo tar -xzf "$HOME/forgeloop.tgz" -C /opt/forgeloop
+sudo bash /opt/forgeloop/ops/gcp/bootstrap.sh
 REMOTE
 )
 
@@ -189,7 +189,7 @@ cd "\$HOME/work"
 if [ ! -d repo ]; then
   git clone "$REPO_URL" repo
 fi
-/opt/ralph-kit/install.sh "\$HOME/work/repo" --wrapper
+/opt/forgeloop/install.sh "\$HOME/work/repo" --wrapper
 REMOTE
 )
 
@@ -201,7 +201,7 @@ REMOTE
   fi
 
   echo "Repo cloned to ~/work/repo on the VM."
-  echo "SSH in and run: cd ~/work/repo && ./ralph.sh plan 1"
+  echo "SSH in and run: cd ~/work/repo && ./forgeloop.sh plan 1"
 fi
 
 echo "Done. SSH in: gcloud compute ssh $NAME --project $PROJECT --zone $ZONE"

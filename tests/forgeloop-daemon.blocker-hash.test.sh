@@ -3,18 +3,18 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-export RALPH_RUNTIME_DIR
-RALPH_RUNTIME_DIR="$(mktemp -d)"
-export RALPH_QUESTIONS_FILE=".tmp_questions.test.md"
+export FORGELOOP_RUNTIME_DIR
+FORGELOOP_RUNTIME_DIR="$(mktemp -d)"
+export FORGELOOP_QUESTIONS_FILE=".tmp_questions.test.md"
 
 cleanup() {
-    rm -rf "$RALPH_RUNTIME_DIR"
-    rm -f "$ROOT_DIR/$RALPH_QUESTIONS_FILE"
+    rm -rf "$FORGELOOP_RUNTIME_DIR"
+    rm -f "$ROOT_DIR/$FORGELOOP_QUESTIONS_FILE"
 }
 trap cleanup EXIT
 
 source "$ROOT_DIR/lib/core.sh"
-source "$ROOT_DIR/bin/ralph-daemon.sh"
+source "$ROOT_DIR/bin/forgeloop-daemon.sh"
 
 assert_eq() {
     local expected="$1"
@@ -47,7 +47,7 @@ cat > "$questions_path" <<'EOF'
 - ⏳ Awaiting response
 EOF
 
-expected_hash=$(ralph_core__hash $'Q-1\nQ-3')
+expected_hash=$(forgeloop_core__hash $'Q-1\nQ-3')
 assert_eq "$expected_hash" "$(get_blocker_hash)"
 
 echo "ok: blocker hash"

@@ -25,7 +25,7 @@ Captured decisions that inform future work. Each entry represents a deliberate c
 
 <!-- Add decisions below this line -->
 
-### D-001 | Example: Use Ralph for Build Orchestration
+### D-001 | Example: Use Forgeloop for Build Orchestration
 - **tags**: tooling, ci, automation
 - **confidence**: high
 - **verified**: true
@@ -34,7 +34,7 @@ Captured decisions that inform future work. Each entry represents a deliberate c
 
 **Context**: Needed consistent build orchestration across projects with multi-model routing.
 
-**Decision**: Adopt Ralph-Kit as the primary build loop framework.
+**Decision**: Adopt Forgeloop as the primary build loop framework.
 
 **Consequences**:
 - (+) Consistent patterns across repos

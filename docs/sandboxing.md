@@ -1,6 +1,6 @@
-# Running Ralph in Full-Auto Mode (Sandboxing)
+# Running Forgeloop in Full-Auto Mode (Sandboxing)
 
-Ralph-style loops are most effective when you run the agent with **auto-permissions** (no approvals) so it can search, edit, run tests, and iterate without a human gate.
+Forgeloop-style loops are most effective when you run the agent with **auto-permissions** (no approvals) so it can search, edit, run tests, and iterate without a human gate.
 
 That also means the agent can run **arbitrary commands**.
 
@@ -11,7 +11,7 @@ Treat the **sandbox/VM/container** as your security boundary.
 - Claude Code (`claude`) runs with `--dangerously-skip-permissions` (auto-approve tool calls).
 - Codex CLI (`codex`) runs with `--dangerously-bypass-approvals-and-sandbox` (no sandbox; use only in isolated runners).
 
-You can override these via environment variables (see `ralph/config.sh` after install, or export `CLAUDE_FLAGS` / `CODEX_FLAGS`).
+You can override these via environment variables (see `forgeloop/config.sh` after install, or export `CLAUDE_FLAGS` / `CODEX_FLAGS`).
 
 ## Recommended baseline
 
@@ -40,8 +40,8 @@ docker run --rm -it \
 Inside the container, install dependencies, install the CLIs, then run:
 
 ```bash
-./ralph/bin/loop.sh plan 1
-./ralph/bin/loop.sh 10
+./forgeloop/bin/loop.sh plan 1
+./forgeloop/bin/loop.sh 10
 ```
 
 Notes:
@@ -66,20 +66,20 @@ This avoids mounting your working copy, at the cost of extra setup.
 3. Install Node.js + `pnpm`.
 4. Install the agent CLI(s): `claude` and/or `codex`.
 5. Clone your target repo.
-6. Install Ralph into the target repo:
+6. Install Forgeloop into the target repo:
    ```bash
-   /path/to/ralph-kit/install.sh /path/to/target-repo --wrapper
+   /path/to/forgeloop/install.sh /path/to/target-repo --wrapper
    ```
 7. Export API keys (and optionally Slack webhook) as environment variables.
 8. Run the loop in `tmux`:
    ```bash
-   tmux new -s ralph
-   ./ralph.sh plan 1
-   ./ralph.sh build 10
+   tmux new -s forgeloop
+   ./forgeloop.sh plan 1
+   ./forgeloop.sh build 10
    ```
 9. (Optional) Run the daemon:
    ```bash
-   ./ralph.sh daemon 300
+   ./forgeloop.sh daemon 300
    ```
 
 ### Google Cloud (gcloud)
@@ -87,14 +87,14 @@ This avoids mounting your working copy, at the cost of extra setup.
 Quick provision (recommended):
 
 ```bash
-cd /path/to/ralph-kit
-OPENAI_API_KEY=... ANTHROPIC_API_KEY=... ops/gcp/provision.sh --name ralph-runner --project <gcp-project> --zone us-central1-a
+cd /path/to/forgeloop
+OPENAI_API_KEY=... ANTHROPIC_API_KEY=... ops/gcp/provision.sh --name forgeloop-runner --project <gcp-project> --zone us-central1-a
 ```
 
 Dry-run (prints commands only):
 
 ```bash
-ops/gcp/provision.sh --name ralph-runner --project <gcp-project> --zone us-central1-a --dry-run
+ops/gcp/provision.sh --name forgeloop-runner --project <gcp-project> --zone us-central1-a --dry-run
 ```
 
 Manual provisioning:
@@ -102,20 +102,20 @@ Manual provisioning:
 Create a VM (example uses `e2-standard-4`):
 
 ```bash
-gcloud compute instances create ralph-runner \
+gcloud compute instances create forgeloop-runner \
   --zone=us-central1-a \
   --machine-type=e2-standard-4 \
   --boot-disk-size=100GB \
   --image-family=ubuntu-2204-lts \
   --image-project=ubuntu-os-cloud
 
-gcloud compute ssh ralph-runner --zone=us-central1-a
+gcloud compute ssh forgeloop-runner --zone=us-central1-a
 ```
 
 Tear down when done:
 
 ```bash
-gcloud compute instances delete ralph-runner --zone=us-central1-a
+gcloud compute instances delete forgeloop-runner --zone=us-central1-a
 ```
 
 ### Hetzner Cloud (hcloud)
@@ -124,25 +124,25 @@ Create a VM (example uses shared vCPU plans):
 
 ```bash
 hcloud server create \
-  --name ralph-runner \
+  --name forgeloop-runner \
   --type cx22 \
   --image ubuntu-22.04 \
   --ssh-key <your-ssh-key-name>
 
-hcloud server ssh ralph-runner
+hcloud server ssh forgeloop-runner
 ```
 
 ### DigitalOcean (doctl)
 
 ```bash
-doctl compute droplet create ralph-runner \
+doctl compute droplet create forgeloop-runner \
   --region nyc3 \
   --size s-2vcpu-4gb \
   --image ubuntu-22-04-x64 \
   --ssh-keys <your-ssh-key-id> \
   --wait
 
-doctl compute ssh ralph-runner
+doctl compute ssh forgeloop-runner
 ```
 
 ### AWS (Lightsail)
@@ -173,5 +173,5 @@ These are **rough reference points** (region, discounts, VAT, storage, snapshots
 - Use a dedicated VM/container (no personal files, no browser cookies, no SSH agent forwarding).
 - Use least-privilege tokens (separate Git deploy key, limited cloud IAM).
 - Prefer short-lived credentials; rotate regularly.
-- Keep `RALPH_AUTOPUSH=false` unless you’re on a work branch and want autonomous pushes.
+- Keep `FORGELOOP_AUTOPUSH=false` unless you’re on a work branch and want autonomous pushes.
 - Limit network egress where possible (allowlist Git + package registries).

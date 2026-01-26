@@ -2,58 +2,58 @@
 set -euo pipefail
 
 # =============================================================================
-# Ralph Loop (Portable)
+# Forgeloop Loop (Portable)
 # =============================================================================
 # Runs an agent loop using Claude and/or Codex CLIs with task-based routing.
 #
 # Usage:
-#   ./ralph/bin/loop.sh [plan] [max_iterations]
-#   ./ralph/bin/loop.sh plan-work "work description" [max_iterations]
-#   ./ralph/bin/loop.sh review
-#   ./ralph/bin/loop.sh [max_iterations]
+#   ./forgeloop/bin/loop.sh [plan] [max_iterations]
+#   ./forgeloop/bin/loop.sh plan-work "work description" [max_iterations]
+#   ./forgeloop/bin/loop.sh review
+#   ./forgeloop/bin/loop.sh [max_iterations]
 #
 # Config:
-#   See `ralph/config.sh` (autopush off by default).
+#   See `forgeloop/config.sh` (autopush off by default).
 # =============================================================================
 
 # Resolve repo directory and load libraries
 REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-RALPH_DIR="$REPO_DIR/ralph"
-if [[ ! -f "$RALPH_DIR/lib/core.sh" ]]; then
-    RALPH_DIR="$REPO_DIR"
+FORGELOOP_DIR="$REPO_DIR/forgeloop"
+if [[ ! -f "$FORGELOOP_DIR/lib/core.sh" ]]; then
+    FORGELOOP_DIR="$REPO_DIR"
 fi
-source "$RALPH_DIR/config.sh" 2>/dev/null || true
-source "$RALPH_DIR/lib/core.sh"
-source "$RALPH_DIR/lib/llm.sh"
+source "$FORGELOOP_DIR/config.sh" 2>/dev/null || true
+source "$FORGELOOP_DIR/lib/core.sh"
+source "$FORGELOOP_DIR/lib/llm.sh"
 
 # Setup runtime directories and paths
-RUNTIME_DIR=$(ralph_core__ensure_runtime_dirs "$REPO_DIR")
-export RALPH_RUNTIME_DIR="$RUNTIME_DIR"
-LOG_FILE="${RALPH_LOOP_LOG_FILE:-$RUNTIME_DIR/logs/loop.log}"
+RUNTIME_DIR=$(forgeloop_core__ensure_runtime_dirs "$REPO_DIR")
+export FORGELOOP_RUNTIME_DIR="$RUNTIME_DIR"
+LOG_FILE="${FORGELOOP_LOOP_LOG_FILE:-$RUNTIME_DIR/logs/loop.log}"
 STATE_FILE="$RUNTIME_DIR/state"
 
-REVIEW_SCHEMA="${RALPH_REVIEW_SCHEMA:-$REPO_DIR/ralph/schemas/review.schema.json}"
-SECURITY_SCHEMA="${RALPH_SECURITY_SCHEMA:-$REPO_DIR/ralph/schemas/security.schema.json}"
+REVIEW_SCHEMA="${FORGELOOP_REVIEW_SCHEMA:-$REPO_DIR/forgeloop/schemas/review.schema.json}"
+SECURITY_SCHEMA="${FORGELOOP_SECURITY_SCHEMA:-$REPO_DIR/forgeloop/schemas/security.schema.json}"
 
-PROMPT_PLAN="${RALPH_PROMPT_PLAN:-PROMPT_plan.md}"
-PROMPT_BUILD="${RALPH_PROMPT_BUILD:-PROMPT_build.md}"
-PROMPT_PLAN_WORK="${RALPH_PROMPT_PLAN_WORK:-PROMPT_plan_work.md}"
+PROMPT_PLAN="${FORGELOOP_PROMPT_PLAN:-PROMPT_plan.md}"
+PROMPT_BUILD="${FORGELOOP_PROMPT_BUILD:-PROMPT_build.md}"
+PROMPT_PLAN_WORK="${FORGELOOP_PROMPT_PLAN_WORK:-PROMPT_plan_work.md}"
 
 # Convenience wrappers using library functions
-log() { ralph_core__log "$1" "$LOG_FILE"; }
-notify() { ralph_core__notify "$REPO_DIR" "$@"; }
+log() { forgeloop_core__log "$1" "$LOG_FILE"; }
+notify() { forgeloop_core__notify "$REPO_DIR" "$@"; }
 
-# Select AGENTS file based on RALPH_LITE mode
-if [[ "${RALPH_LITE:-false}" == "true" ]]; then
-    export RALPH_AGENTS_FILE="AGENTS-lite.md"
+# Select AGENTS file based on FORGELOOP_LITE mode
+if [[ "${FORGELOOP_LITE:-false}" == "true" ]]; then
+    export FORGELOOP_AGENTS_FILE="AGENTS-lite.md"
     if [[ -f "$REPO_DIR/AGENTS-lite.md" ]]; then
         log "Using lite mode: AGENTS-lite.md"
     else
         log "Warning: AGENTS-lite.md not found, falling back to AGENTS.md"
-        export RALPH_AGENTS_FILE="AGENTS.md"
+        export FORGELOOP_AGENTS_FILE="AGENTS.md"
     fi
 else
-    export RALPH_AGENTS_FILE="AGENTS.md"
+    export FORGELOOP_AGENTS_FILE="AGENTS.md"
 fi
 
 # =============================================================================
@@ -71,7 +71,7 @@ if [ "${1:-}" = "plan" ]; then
 elif [ "${1:-}" = "plan-work" ]; then
     if [ -z "${2:-}" ]; then
         echo "Error: plan-work requires a work description"
-        echo "Usage: ./ralph/bin/loop.sh plan-work \"description\" [max_iterations]"
+        echo "Usage: ./forgeloop/bin/loop.sh plan-work \"description\" [max_iterations]"
         exit 1
     fi
     MODE="plan-work"
@@ -86,7 +86,7 @@ elif [[ "${1:-}" =~ ^[0-9]+$ ]]; then
 fi
 
 ITERATION=0
-CURRENT_BRANCH=$(ralph_core__git_current_branch)
+CURRENT_BRANCH=$(forgeloop_core__git_current_branch)
 
 if [ "$MODE" = "plan-work" ]; then
     if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
@@ -99,13 +99,13 @@ fi
 export MODE
 
 cd "$REPO_DIR"
-ralph_llm__load_state "$STATE_FILE"
+forgeloop_llm__load_state "$STATE_FILE"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Mode:       $MODE"
 echo "Branch:     $CURRENT_BRANCH"
 echo "Prompt:     $PROMPT_FILE"
-echo "Agents:     $RALPH_AGENTS_FILE"
+echo "Agents:     $FORGELOOP_AGENTS_FILE"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Task Routing: $TASK_ROUTING"
 echo "  Planning: $PLANNING_MODEL ($CODEX_PLANNING_CONFIG)"
@@ -113,11 +113,11 @@ echo "  Review:   $REVIEW_MODEL ($CODEX_REVIEW_CONFIG)"
 echo "  Security: $SECURITY_MODEL ($CODEX_SECURITY_CONFIG)"
 echo "  Build:    $BUILD_MODEL (Claude $CLAUDE_MODEL)"
 echo "Failover:   $ENABLE_FAILOVER"
-echo "Autopush:   ${RALPH_AUTOPUSH:-false}"
+echo "Autopush:   ${FORGELOOP_AUTOPUSH:-false}"
 [ "$MAX_ITERATIONS" -gt 0 ] && echo "Max:        $MAX_ITERATIONS iterations"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-notify "🚀" "Ralph Started" "Mode: $MODE | Branch: $CURRENT_BRANCH"
+notify "🚀" "Forgeloop Started" "Mode: $MODE | Branch: $CURRENT_BRANCH"
 
 if [ "$MODE" != "review" ] && [ ! -f "$PROMPT_FILE" ]; then
     echo "Error: $PROMPT_FILE not found"
@@ -126,10 +126,10 @@ fi
 
 # Session knowledge context (best-effort): write $RUNTIME_DIR/session-context.md and inject into prompts.
 SESSION_CONTEXT_FILE="$RUNTIME_DIR/session-context.md"
-if [[ -x "$RALPH_DIR/bin/session-start.sh" ]] && ([[ -d "$REPO_DIR/system/knowledge" ]] || [[ -d "$REPO_DIR/system/experts" ]]); then
-    RALPH_SESSION_QUIET=true RALPH_SESSION_NO_STDOUT=true "$RALPH_DIR/bin/session-start.sh" >/dev/null 2>&1 || true
+if [[ -x "$FORGELOOP_DIR/bin/session-start.sh" ]] && ([[ -d "$REPO_DIR/system/knowledge" ]] || [[ -d "$REPO_DIR/system/experts" ]]); then
+    FORGELOOP_SESSION_QUIET=true FORGELOOP_SESSION_NO_STDOUT=true "$FORGELOOP_DIR/bin/session-start.sh" >/dev/null 2>&1 || true
     if [[ -f "$SESSION_CONTEXT_FILE" ]]; then
-        export RALPH_SESSION_CONTEXT="$SESSION_CONTEXT_FILE"
+        export FORGELOOP_SESSION_CONTEXT="$SESSION_CONTEXT_FILE"
     fi
 fi
 
@@ -141,27 +141,27 @@ while true; do
 
     case "$MODE" in
         review)
-            git diff 2>/dev/null | ralph_llm__exec "$REPO_DIR" "stdin" "review" "$STATE_FILE" "$LOG_FILE"
+            git diff 2>/dev/null | forgeloop_llm__exec "$REPO_DIR" "stdin" "review" "$STATE_FILE" "$LOG_FILE"
             ;;
         plan|plan-work)
-            ralph_llm__exec "$REPO_DIR" "file:$PROMPT_FILE" "$MODE" "$STATE_FILE" "$LOG_FILE"
+            forgeloop_llm__exec "$REPO_DIR" "file:$PROMPT_FILE" "$MODE" "$STATE_FILE" "$LOG_FILE"
             ;;
         *)
-            ralph_llm__exec "$REPO_DIR" "file:$PROMPT_FILE" "build" "$STATE_FILE" "$LOG_FILE"
+            forgeloop_llm__exec "$REPO_DIR" "file:$PROMPT_FILE" "build" "$STATE_FILE" "$LOG_FILE"
             ;;
     esac
 
     if [ "$MODE" = "build" ]; then
-        ralph_llm__run_codex_review "$REPO_DIR" "$REVIEW_SCHEMA" "$STATE_FILE" "$LOG_FILE"
+        forgeloop_llm__run_codex_review "$REPO_DIR" "$REVIEW_SCHEMA" "$STATE_FILE" "$LOG_FILE"
     fi
 
-    ralph_llm__security_gate "$REPO_DIR" "$SECURITY_SCHEMA" "$STATE_FILE" "$LOG_FILE"
-    ralph_core__git_push_branch "$REPO_DIR" "$CURRENT_BRANCH" "$LOG_FILE"
+    forgeloop_llm__security_gate "$REPO_DIR" "$SECURITY_SCHEMA" "$STATE_FILE" "$LOG_FILE"
+    forgeloop_core__git_push_branch "$REPO_DIR" "$CURRENT_BRANCH" "$LOG_FILE"
 
     ITERATION=$((ITERATION + 1))
 
     if [ $((ITERATION % 5)) -eq 0 ]; then
-        notify "🔄" "Ralph Progress" "Completed $ITERATION iterations on $CURRENT_BRANCH (model: $AI_MODEL)"
+        notify "🔄" "Forgeloop Progress" "Completed $ITERATION iterations on $CURRENT_BRANCH (model: $AI_MODEL)"
     fi
 
     echo -e "\n\n======================== LOOP $ITERATION ($AI_MODEL) ========================\n"

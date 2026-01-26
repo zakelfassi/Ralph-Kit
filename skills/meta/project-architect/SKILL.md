@@ -42,4 +42,4 @@ Produce a plan that is immediately executable, with:
 
 ## Notes
 
-- If this project uses Ralph Kit: keep the plan aligned with `IMPLEMENTATION_PLAN.md` and Ralph's “single unit of work” iteration model.
+- If this project uses Forgeloop: keep the plan aligned with `IMPLEMENTATION_PLAN.md` and Forgeloop's “single unit of work” iteration model.

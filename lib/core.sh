@@ -1,41 +1,41 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Ralph Core Library
+# Forgeloop Core Library
 # =============================================================================
-# Shared utilities for Ralph scripts: logging, notifications, config loading,
+# Shared utilities for Forgeloop scripts: logging, notifications, config loading,
 # runtime dir management, git helpers, and flag consumption.
 #
-# Usage: source "$REPO_DIR/ralph/lib/core.sh"
+# Usage: source "$REPO_DIR/forgeloop/lib/core.sh"
 #
 # This library is side-effect-free on source (no implicit cd, no file writes).
-# All functions are namespaced with ralph_core__ prefix to avoid collisions.
+# All functions are namespaced with forgeloop_core__ prefix to avoid collisions.
 # =============================================================================
 
 # Prevent double-sourcing
-[[ -n "${_RALPH_CORE_LOADED:-}" ]] && return 0
-_RALPH_CORE_LOADED=1
+[[ -n "${_FORGELOOP_CORE_LOADED:-}" ]] && return 0
+_FORGELOOP_CORE_LOADED=1
 
 # =============================================================================
 # Path Resolution
 # =============================================================================
 
 # Resolve the repository directory from a script location
-# Usage: REPO_DIR=$(ralph_core__resolve_repo_dir "$0")
-ralph_core__resolve_repo_dir() {
+# Usage: REPO_DIR=$(forgeloop_core__resolve_repo_dir "$0")
+forgeloop_core__resolve_repo_dir() {
     local script_path="${1:-$0}"
     local script_dir
     script_dir="$(cd "$(dirname "$script_path")" && pwd)"
 
-    # Assume scripts are in ralph/bin/ or ralph/lib/
-    if [[ "$script_dir" == */ralph/bin ]] || [[ "$script_dir" == */ralph/lib ]]; then
+    # Assume scripts are in forgeloop/bin/ or forgeloop/lib/
+    if [[ "$script_dir" == */forgeloop/bin ]] || [[ "$script_dir" == */forgeloop/lib ]]; then
         echo "$(cd "$script_dir/../.." && pwd)"
     elif [[ "$script_dir" == */bin ]] || [[ "$script_dir" == */lib ]]; then
         echo "$(cd "$script_dir/.." && pwd)"
     else
-        # Fallback: walk up looking for ralph/config.sh
+        # Fallback: walk up looking for config.sh (vendored or standalone)
         local dir="$script_dir"
         while [[ "$dir" != "/" ]]; do
-            if [[ -f "$dir/ralph/config.sh" ]]; then
+            if [[ -f "$dir/forgeloop/config.sh" ]] || [[ -f "$dir/config.sh" ]]; then
                 echo "$dir"
                 return 0
             fi
@@ -46,19 +46,23 @@ ralph_core__resolve_repo_dir() {
     fi
 }
 
-# Load Ralph configuration from config.sh
-# Usage: ralph_core__load_config "$REPO_DIR"
-ralph_core__load_config() {
+# Load Forgeloop configuration from config.sh
+# Usage: forgeloop_core__load_config "$REPO_DIR"
+forgeloop_core__load_config() {
     local repo_dir="$1"
     # shellcheck disable=SC1091
-    source "$repo_dir/ralph/config.sh" 2>/dev/null || true
+    if [[ -f "$repo_dir/forgeloop/config.sh" ]]; then
+        source "$repo_dir/forgeloop/config.sh" 2>/dev/null || true
+    else
+        source "$repo_dir/config.sh" 2>/dev/null || true
+    fi
 }
 
 # Ensure runtime directories exist and return the runtime dir path
-# Usage: RUNTIME_DIR=$(ralph_core__ensure_runtime_dirs "$REPO_DIR")
-ralph_core__ensure_runtime_dirs() {
+# Usage: RUNTIME_DIR=$(forgeloop_core__ensure_runtime_dirs "$REPO_DIR")
+forgeloop_core__ensure_runtime_dirs() {
     local repo_dir="$1"
-    local runtime_dir="${RALPH_RUNTIME_DIR:-.ralph}"
+    local runtime_dir="${FORGELOOP_RUNTIME_DIR:-.forgeloop}"
 
     # Convert relative to absolute
     if [[ "$runtime_dir" != /* ]]; then
@@ -74,8 +78,8 @@ ralph_core__ensure_runtime_dirs() {
 # =============================================================================
 
 # Log a message with timestamp
-# Usage: ralph_core__log "message" ["$LOG_FILE"]
-ralph_core__log() {
+# Usage: forgeloop_core__log "message" ["$LOG_FILE"]
+forgeloop_core__log() {
     local msg="$1"
     local log_file="${2:-}"
     local line="[$(date '+%Y-%m-%d %H:%M:%S')] $msg"
@@ -92,14 +96,14 @@ ralph_core__log() {
 # =============================================================================
 
 # Send a notification via notify.sh (best-effort)
-# Usage: ralph_core__notify "$REPO_DIR" "emoji" "title" "message"
-ralph_core__notify() {
+# Usage: forgeloop_core__notify "$REPO_DIR" "emoji" "title" "message"
+forgeloop_core__notify() {
     local repo_dir="$1"
     local emoji="$2"
     local title="$3"
     local message="$4"
 
-    local notify_script="$repo_dir/ralph/bin/notify.sh"
+    local notify_script="$repo_dir/forgeloop/bin/notify.sh"
     if [[ -x "$notify_script" ]]; then
         "$notify_script" "$emoji" "$title" "$message" 2>/dev/null || true
     fi
@@ -110,43 +114,43 @@ ralph_core__notify() {
 # =============================================================================
 
 # Check if git worktree is clean (no uncommitted changes)
-# Usage: if ralph_core__is_git_worktree_clean; then ...
-ralph_core__is_git_worktree_clean() {
+# Usage: if forgeloop_core__is_git_worktree_clean; then ...
+forgeloop_core__is_git_worktree_clean() {
     git diff --quiet && git diff --cached --quiet && [[ -z "$(git ls-files --others --exclude-standard)" ]]
 }
 
 # Get current git branch name
-# Usage: branch=$(ralph_core__git_current_branch)
-ralph_core__git_current_branch() {
+# Usage: branch=$(forgeloop_core__git_current_branch)
+forgeloop_core__git_current_branch() {
     git branch --show-current 2>/dev/null || echo "unknown"
 }
 
 # Check if a remote exists
-# Usage: if ralph_core__git_has_remote "origin"; then ...
-ralph_core__git_has_remote() {
+# Usage: if forgeloop_core__git_has_remote "origin"; then ...
+forgeloop_core__git_has_remote() {
     local remote="$1"
     git remote get-url "$remote" >/dev/null 2>&1
 }
 
 # Sync local branch with remote (fetch + fast-forward or rebase)
-# Usage: ralph_core__git_sync_branch "$REPO_DIR" "$branch" "$LOG_FILE"
-ralph_core__git_sync_branch() {
+# Usage: forgeloop_core__git_sync_branch "$REPO_DIR" "$branch" "$LOG_FILE"
+forgeloop_core__git_sync_branch() {
     local repo_dir="$1"
     local branch="$2"
     local log_file="${3:-}"
-    local remote="${RALPH_GIT_REMOTE:-origin}"
+    local remote="${FORGELOOP_GIT_REMOTE:-origin}"
 
-    if ! ralph_core__git_has_remote "$remote"; then
+    if ! forgeloop_core__git_has_remote "$remote"; then
         return 0
     fi
 
-    if ! ralph_core__is_git_worktree_clean; then
-        ralph_core__log "Working tree dirty; skipping sync with $remote/$branch" "$log_file"
+    if ! forgeloop_core__is_git_worktree_clean; then
+        forgeloop_core__log "Working tree dirty; skipping sync with $remote/$branch" "$log_file"
         return 0
     fi
 
     if ! git fetch "$remote" "$branch" 2>/dev/null && ! git fetch "$remote" 2>/dev/null; then
-        ralph_core__log "git fetch failed; skipping sync" "$log_file"
+        forgeloop_core__log "git fetch failed; skipping sync" "$log_file"
         return 0
     fi
 
@@ -166,9 +170,9 @@ ralph_core__git_sync_branch() {
     [[ -z "$base_sha" ]] && return 0
 
     if [[ "$local_sha" = "$base_sha" ]]; then
-        ralph_core__log "Fast-forwarding $branch to $remote_ref" "$log_file"
+        forgeloop_core__log "Fast-forwarding $branch to $remote_ref" "$log_file"
         git merge --ff-only "$remote_ref" 2>/dev/null || {
-            ralph_core__log "Fast-forward failed; manual intervention required" "$log_file"
+            forgeloop_core__log "Fast-forward failed; manual intervention required" "$log_file"
             return 1
         }
         return 0
@@ -179,34 +183,34 @@ ralph_core__git_sync_branch() {
     fi
 
     if [[ "$branch" = "main" ]] || [[ "$branch" = "master" ]]; then
-        ralph_core__log "Branch $branch diverged from $remote_ref; merging" "$log_file"
+        forgeloop_core__log "Branch $branch diverged from $remote_ref; merging" "$log_file"
         git merge --no-edit "$remote_ref" 2>/dev/null || return 1
         return 0
     fi
 
-    ralph_core__log "Branch $branch diverged from $remote_ref; rebasing local commits" "$log_file"
+    forgeloop_core__log "Branch $branch diverged from $remote_ref; rebasing local commits" "$log_file"
     if ! git rebase "$remote_ref" 2>/dev/null; then
-        ralph_core__log "Rebase failed; aborting and attempting merge" "$log_file"
+        forgeloop_core__log "Rebase failed; aborting and attempting merge" "$log_file"
         git rebase --abort 2>/dev/null || true
         git merge --no-edit "$remote_ref" 2>/dev/null || return 1
     fi
 }
 
-# Push branch to remote (respects RALPH_AUTOPUSH)
-# Usage: ralph_core__git_push_branch "$REPO_DIR" "$branch" "$LOG_FILE"
-ralph_core__git_push_branch() {
+# Push branch to remote (respects FORGELOOP_AUTOPUSH)
+# Usage: forgeloop_core__git_push_branch "$REPO_DIR" "$branch" "$LOG_FILE"
+forgeloop_core__git_push_branch() {
     local repo_dir="$1"
     local branch="$2"
     local log_file="${3:-}"
-    local remote="${RALPH_GIT_REMOTE:-origin}"
+    local remote="${FORGELOOP_GIT_REMOTE:-origin}"
 
-    if [[ "${RALPH_AUTOPUSH:-false}" != "true" ]]; then
-        ralph_core__log "Autopush disabled; skipping push" "$log_file"
+    if [[ "${FORGELOOP_AUTOPUSH:-false}" != "true" ]]; then
+        forgeloop_core__log "Autopush disabled; skipping push" "$log_file"
         return 0
     fi
 
-    if ! ralph_core__git_has_remote "$remote"; then
-        ralph_core__log "No git remote '$remote' configured; skipping push" "$log_file"
+    if ! forgeloop_core__git_has_remote "$remote"; then
+        forgeloop_core__log "No git remote '$remote' configured; skipping push" "$log_file"
         return 0
     fi
 
@@ -214,14 +218,14 @@ ralph_core__git_push_branch() {
         return 0
     fi
 
-    ralph_core__log "Push failed for $branch; syncing with $remote and retrying..." "$log_file"
-    if ! ralph_core__git_sync_branch "$repo_dir" "$branch" "$log_file"; then
-        ralph_core__notify "$repo_dir" "🚨" "Ralph Push Failed" "Failed to sync with $remote/$branch. Manual intervention required."
+    forgeloop_core__log "Push failed for $branch; syncing with $remote and retrying..." "$log_file"
+    if ! forgeloop_core__git_sync_branch "$repo_dir" "$branch" "$log_file"; then
+        forgeloop_core__notify "$repo_dir" "🚨" "Forgeloop Push Failed" "Failed to sync with $remote/$branch. Manual intervention required."
         return 1
     fi
 
     git push "$remote" "$branch" 2>/dev/null || {
-        ralph_core__notify "$repo_dir" "🚨" "Ralph Push Failed" "Failed to push $branch after sync. Manual intervention required."
+        forgeloop_core__notify "$repo_dir" "🚨" "Forgeloop Push Failed" "Failed to push $branch after sync. Manual intervention required."
         return 1
     }
 }
@@ -231,8 +235,8 @@ ralph_core__git_push_branch() {
 # =============================================================================
 
 # Consume a flag from a file (e.g., [REPLAN], [DEPLOY], [PAUSE])
-# Usage: if ralph_core__consume_flag "$REPO_DIR" "REQUESTS.md" "REPLAN"; then ...
-ralph_core__consume_flag() {
+# Usage: if forgeloop_core__consume_flag "$REPO_DIR" "REQUESTS.md" "REPLAN"; then ...
+forgeloop_core__consume_flag() {
     local repo_dir="$1"
     local file_rel="$2"
     local flag="$3"
@@ -243,13 +247,13 @@ ralph_core__consume_flag() {
     # GNU/BSD compatible in-place edit
     sed -i.bak "s/\\[$flag\\]//g" "$file" && rm -f "$file.bak"
     git add "$file_rel" 2>/dev/null || true
-    git commit -m "ralph: processed $flag" --allow-empty 2>/dev/null || true
+    git commit -m "forgeloop: processed $flag" --allow-empty 2>/dev/null || true
     return 0
 }
 
 # Check if a flag exists in a file
-# Usage: if ralph_core__has_flag "$REPO_DIR" "REQUESTS.md" "PAUSE"; then ...
-ralph_core__has_flag() {
+# Usage: if forgeloop_core__has_flag "$REPO_DIR" "REQUESTS.md" "PAUSE"; then ...
+forgeloop_core__has_flag() {
     local repo_dir="$1"
     local file_rel="$2"
     local flag="$3"
@@ -263,52 +267,52 @@ ralph_core__has_flag() {
 # =============================================================================
 
 # Spinner with step detection for visual feedback
-# Usage: ralph_core__spinner_start "Working"
-#        ralph_core__spinner_step "Reading files"
-#        ralph_core__spinner_stop
-_RALPH_SPINNER_PID=""
-_RALPH_SPINNER_MSG=""
+# Usage: forgeloop_core__spinner_start "Working"
+#        forgeloop_core__spinner_step "Reading files"
+#        forgeloop_core__spinner_stop
+_FORGELOOP_SPINNER_PID=""
+_FORGELOOP_SPINNER_MSG=""
 
-ralph_core__spinner_start() {
+forgeloop_core__spinner_start() {
     local msg="${1:-Working}"
-    _RALPH_SPINNER_MSG="$msg"
+    _FORGELOOP_SPINNER_MSG="$msg"
 
     if [[ -t 1 ]]; then
         (
             local spinchars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
             local i=0
             while true; do
-                printf "\r\033[K%s %s" "${spinchars:i++%10:1}" "$_RALPH_SPINNER_MSG"
+                printf "\r\033[K%s %s" "${spinchars:i++%10:1}" "$_FORGELOOP_SPINNER_MSG"
                 sleep 0.1
             done
         ) &
-        _RALPH_SPINNER_PID=$!
+        _FORGELOOP_SPINNER_PID=$!
         disown 2>/dev/null || true
     fi
 }
 
-ralph_core__spinner_step() {
+forgeloop_core__spinner_step() {
     local msg="${1:-Working}"
-    _RALPH_SPINNER_MSG="$msg"
+    _FORGELOOP_SPINNER_MSG="$msg"
 }
 
-ralph_core__spinner_stop() {
-    if [[ -n "$_RALPH_SPINNER_PID" ]]; then
-        kill "$_RALPH_SPINNER_PID" 2>/dev/null || true
-        wait "$_RALPH_SPINNER_PID" 2>/dev/null || true
-        _RALPH_SPINNER_PID=""
+forgeloop_core__spinner_stop() {
+    if [[ -n "$_FORGELOOP_SPINNER_PID" ]]; then
+        kill "$_FORGELOOP_SPINNER_PID" 2>/dev/null || true
+        wait "$_FORGELOOP_SPINNER_PID" 2>/dev/null || true
+        _FORGELOOP_SPINNER_PID=""
         printf "\r\033[K"
     fi
 }
 
 # Timer display - shows elapsed time
-# Usage: RALPH_START_TIME=$(ralph_core__timer_start)
-#        ralph_core__timer_elapsed "$RALPH_START_TIME"  # Returns "05:23"
-ralph_core__timer_start() {
+# Usage: FORGELOOP_START_TIME=$(forgeloop_core__timer_start)
+#        forgeloop_core__timer_elapsed "$FORGELOOP_START_TIME"  # Returns "05:23"
+forgeloop_core__timer_start() {
     date +%s
 }
 
-ralph_core__timer_elapsed() {
+forgeloop_core__timer_elapsed() {
     local start_time="$1"
     local now
     now=$(date +%s)
@@ -319,8 +323,8 @@ ralph_core__timer_elapsed() {
 }
 
 # Desktop notification (macOS/Linux compatible)
-# Usage: ralph_core__desktop_notify "title" "message"
-ralph_core__desktop_notify() {
+# Usage: forgeloop_core__desktop_notify "title" "message"
+forgeloop_core__desktop_notify() {
     local title="$1"
     local message="$2"
 
@@ -333,15 +337,15 @@ on run argv
     display notification theMessage with title theTitle
 end run
 APPLESCRIPT
-    elif ralph_core__has_cmd "notify-send"; then
+    elif forgeloop_core__has_cmd "notify-send"; then
         # Linux with notify-send
         notify-send "$title" "$message" 2>/dev/null || true
     fi
 }
 
 # Parse token usage from Claude output (JSON stream format)
-# Usage: tokens=$(ralph_core__parse_token_usage "$output_file")
-ralph_core__parse_token_usage() {
+# Usage: tokens=$(forgeloop_core__parse_token_usage "$output_file")
+forgeloop_core__parse_token_usage() {
     local output_file="$1"
 
     if [[ ! -f "$output_file" ]]; then
@@ -361,8 +365,8 @@ ralph_core__parse_token_usage() {
 }
 
 # Detect project type from current directory
-# Usage: project_type=$(ralph_core__detect_project_type "$REPO_DIR")
-ralph_core__detect_project_type() {
+# Usage: project_type=$(forgeloop_core__detect_project_type "$REPO_DIR")
+forgeloop_core__detect_project_type() {
     local repo_dir="$1"
 
     if [[ -f "$repo_dir/package.json" ]]; then
@@ -389,29 +393,29 @@ ralph_core__detect_project_type() {
 # =============================================================================
 
 # Check if a command exists
-# Usage: if ralph_core__has_cmd "jq"; then ...
-ralph_core__has_cmd() {
+# Usage: if forgeloop_core__has_cmd "jq"; then ...
+forgeloop_core__has_cmd() {
     command -v "$1" &>/dev/null
 }
 
 # Require a command, exit with error if not found
-# Usage: ralph_core__require_cmd "jq"
-ralph_core__require_cmd() {
+# Usage: forgeloop_core__require_cmd "jq"
+forgeloop_core__require_cmd() {
     local cmd="$1"
-    if ! ralph_core__has_cmd "$cmd"; then
+    if ! forgeloop_core__has_cmd "$cmd"; then
         echo "Error: Required command '$cmd' not found" >&2
         exit 127
     fi
 }
 
 # Get a value from a JSON file using jq
-# Usage: value=$(ralph_core__json_get "file.json" ".key" "default")
-ralph_core__json_get() {
+# Usage: value=$(forgeloop_core__json_get "file.json" ".key" "default")
+forgeloop_core__json_get() {
     local file="$1"
     local jq_expr="$2"
     local default="${3:-}"
 
-    if [[ ! -f "$file" ]] || ! ralph_core__has_cmd "jq"; then
+    if [[ ! -f "$file" ]] || ! forgeloop_core__has_cmd "jq"; then
         echo "$default"
         return 0
     fi
@@ -427,15 +431,15 @@ ralph_core__json_get() {
 }
 
 # Compute hash of a string or file (portable: tries md5sum, then shasum, then md5)
-# Usage: hash=$(ralph_core__hash "string")
-# Usage: hash=$(ralph_core__hash_file "path/to/file")
-ralph_core__hash() {
+# Usage: hash=$(forgeloop_core__hash "string")
+# Usage: hash=$(forgeloop_core__hash_file "path/to/file")
+forgeloop_core__hash() {
     local input="$1"
-    if ralph_core__has_cmd "md5sum"; then
+    if forgeloop_core__has_cmd "md5sum"; then
         echo "$input" | md5sum | cut -d' ' -f1
-    elif ralph_core__has_cmd "shasum"; then
+    elif forgeloop_core__has_cmd "shasum"; then
         echo "$input" | shasum | cut -d' ' -f1
-    elif ralph_core__has_cmd "md5"; then
+    elif forgeloop_core__has_cmd "md5"; then
         echo "$input" | md5
     else
         # Fallback: just echo the input (not a hash, but better than nothing)
@@ -443,18 +447,18 @@ ralph_core__hash() {
     fi
 }
 
-ralph_core__hash_file() {
+forgeloop_core__hash_file() {
     local file="$1"
     if [[ ! -f "$file" ]]; then
         echo ""
         return 1
     fi
 
-    if ralph_core__has_cmd "md5sum"; then
+    if forgeloop_core__has_cmd "md5sum"; then
         md5sum "$file" | cut -d' ' -f1
-    elif ralph_core__has_cmd "shasum"; then
+    elif forgeloop_core__has_cmd "shasum"; then
         shasum "$file" | cut -d' ' -f1
-    elif ralph_core__has_cmd "md5"; then
+    elif forgeloop_core__has_cmd "md5"; then
         md5 -q "$file"
     else
         cat "$file" | head -c 32

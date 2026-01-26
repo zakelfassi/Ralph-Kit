@@ -2,15 +2,15 @@
 set -euo pipefail
 
 # =============================================================================
-# Ralph Log Ingestion
+# Forgeloop Log Ingestion
 # =============================================================================
 # Analyzes logs/errors via LLM and appends a formatted request to REQUESTS.md.
 # Supports best-effort dedupe using both a content hash and an issue signature.
 #
 # Usage:
-#   ./ralph/bin/ingest-logs.sh --file /var/log/myapp.log
-#   ./ralph/bin/ingest-logs.sh --cmd "journalctl -u myapp -n 400 --no-pager"
-#   some_command | ./ralph/bin/ingest-logs.sh --stdin
+#   ./forgeloop/bin/ingest-logs.sh --file /var/log/myapp.log
+#   ./forgeloop/bin/ingest-logs.sh --cmd "journalctl -u myapp -n 400 --no-pager"
+#   some_command | ./forgeloop/bin/ingest-logs.sh --stdin
 #
 # Options:
 #   --file <path>        Path to a log file (absolute or relative to repo root)
@@ -32,23 +32,23 @@ set -euo pipefail
 
 # Resolve repo directory and load libraries
 REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-RALPH_DIR="$REPO_DIR/ralph"
-if [[ ! -f "$RALPH_DIR/lib/core.sh" ]]; then
-    RALPH_DIR="$REPO_DIR"
+FORGELOOP_DIR="$REPO_DIR/forgeloop"
+if [[ ! -f "$FORGELOOP_DIR/lib/core.sh" ]]; then
+    FORGELOOP_DIR="$REPO_DIR"
 fi
-source "$RALPH_DIR/config.sh" 2>/dev/null || true
-source "$RALPH_DIR/lib/core.sh"
-source "$RALPH_DIR/lib/llm.sh"
+source "$FORGELOOP_DIR/config.sh" 2>/dev/null || true
+source "$FORGELOOP_DIR/lib/core.sh"
+source "$FORGELOOP_DIR/lib/llm.sh"
 
-ralph_core__require_cmd "jq"
+forgeloop_core__require_cmd "jq"
 
 # Setup runtime directories
-RUNTIME_DIR=$(ralph_core__ensure_runtime_dirs "$REPO_DIR")
-LOG_FILE="${RALPH_INGEST_LOGS_LOG_FILE:-$RUNTIME_DIR/logs/ingest-logs.log}"
+RUNTIME_DIR=$(forgeloop_core__ensure_runtime_dirs "$REPO_DIR")
+LOG_FILE="${FORGELOOP_INGEST_LOGS_LOG_FILE:-$RUNTIME_DIR/logs/ingest-logs.log}"
 
 # Defaults
-LOGS_DIR="${RALPH_LOGS_DIR:-logs}"
-REQUESTS_FILE="${RALPH_REQUESTS_FILE:-REQUESTS.md}"
+LOGS_DIR="${FORGELOOP_LOGS_DIR:-logs}"
+REQUESTS_FILE="${FORGELOOP_REQUESTS_FILE:-REQUESTS.md}"
 MODE="request"
 DRY_RUN=false
 FORCE=false
@@ -59,24 +59,24 @@ LOGS_CMD=""
 READ_STDIN=false
 LATEST=false
 GLOB="*.log"
-TAIL_LINES="${RALPH_INGEST_LOGS_TAIL:-400}"
-MAX_CHARS="${RALPH_INGEST_LOGS_MAX_CHARS:-60000}"
+TAIL_LINES="${FORGELOOP_INGEST_LOGS_TAIL:-400}"
+MAX_CHARS="${FORGELOOP_INGEST_LOGS_MAX_CHARS:-60000}"
 SOURCE_LABEL=""
 JSON_OUT=""
 
-log() { ralph_core__log "$1" "$LOG_FILE"; }
-notify() { ralph_core__notify "$REPO_DIR" "$@"; }
+log() { forgeloop_core__log "$1" "$LOG_FILE"; }
+notify() { forgeloop_core__notify "$REPO_DIR" "$@"; }
 
 usage() {
     cat <<'USAGE'
-Ralph Log Ingestion
+Forgeloop Log Ingestion
 
 Analyzes logs/errors via an LLM and appends a formatted request to REQUESTS.md.
 
 Usage:
-  ./ralph/bin/ingest-logs.sh --file /var/log/myapp.log
-  ./ralph/bin/ingest-logs.sh --cmd "journalctl -u myapp -n 400 --no-pager"
-  some_command | ./ralph/bin/ingest-logs.sh --stdin
+  ./forgeloop/bin/ingest-logs.sh --file /var/log/myapp.log
+  ./forgeloop/bin/ingest-logs.sh --cmd "journalctl -u myapp -n 400 --no-pager"
+  some_command | ./forgeloop/bin/ingest-logs.sh --stdin
 
 Options:
   --file <path>        Path to a log file (absolute or relative to repo root)
@@ -285,12 +285,12 @@ truncate_chars() {
 
 get_content_hash() {
     local file="$1"
-    ralph_core__hash_file "$file" | cut -c1-12
+    forgeloop_core__hash_file "$file" | cut -c1-12
 }
 
 get_signature_hash() {
     local sig="$1"
-    ralph_core__hash "$sig" | cut -c1-12
+    forgeloop_core__hash "$sig" | cut -c1-12
 }
 
 is_already_ingested() {
@@ -350,7 +350,7 @@ Respond with ONLY a single-line JSON object (no markdown, no code fences):
 }"
 
     local result json_text
-    result=$(echo "$prompt" | ralph_llm__exec "$REPO_DIR" "stdin" "plan" "" "$LOG_FILE" 2>&1)
+    result=$(echo "$prompt" | forgeloop_llm__exec "$REPO_DIR" "stdin" "plan" "" "$LOG_FILE" 2>&1)
 
     json_text=$(echo "$result" | grep -E '^\{' | head -1 || echo "")
     if [[ -z "$json_text" ]]; then
@@ -520,7 +520,7 @@ main() {
                 log "Appended request to $REQUESTS_FILE"
                 notify "📥" "Logs Ingested" "Added new request from logs"
 
-                if [[ "${RALPH_INGEST_TRIGGER_REPLAN:-false}" == "true" ]]; then
+                if [[ "${FORGELOOP_INGEST_TRIGGER_REPLAN:-false}" == "true" ]]; then
                     echo "[REPLAN]" >> "$requests_path"
                     log "Added [REPLAN] trigger"
                 fi
@@ -538,7 +538,7 @@ main() {
                 echo "$work_scope"
             else
                 log "Running plan-work with scope: $work_scope"
-                "$REPO_DIR/ralph/bin/loop.sh" plan-work "$work_scope" 1
+                "$REPO_DIR/forgeloop/bin/loop.sh" plan-work "$work_scope" 1
             fi
             ;;
 

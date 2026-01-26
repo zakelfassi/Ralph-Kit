@@ -1,49 +1,49 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Ralph Framework Config
+# Forgeloop Framework Config
 # - This file is safe to commit.
-# - Override any value by exporting it before running Ralph.
+# - Override any value by exporting it before running Forgeloop.
 
 # Runtime dir (relative to repo root if not absolute)
-export RALPH_RUNTIME_DIR="${RALPH_RUNTIME_DIR:-.ralph}"
+export FORGELOOP_RUNTIME_DIR="${FORGELOOP_RUNTIME_DIR:-.forgeloop}"
 
 # Git defaults
-export RALPH_DEFAULT_BRANCH="${RALPH_DEFAULT_BRANCH:-main}"
-export RALPH_GIT_REMOTE="${RALPH_GIT_REMOTE:-origin}"
+export FORGELOOP_DEFAULT_BRANCH="${FORGELOOP_DEFAULT_BRANCH:-main}"
+export FORGELOOP_GIT_REMOTE="${FORGELOOP_GIT_REMOTE:-origin}"
 
-# If true, Ralph will try to push after each loop iteration.
+# If true, Forgeloop will try to push after each loop iteration.
 # Safe default is false for new repos; enable on a dedicated branch/runner.
-export RALPH_AUTOPUSH="${RALPH_AUTOPUSH:-false}"
+export FORGELOOP_AUTOPUSH="${FORGELOOP_AUTOPUSH:-false}"
 
 # Prompt files (relative to repo root)
-export RALPH_PROMPT_PLAN="${RALPH_PROMPT_PLAN:-PROMPT_plan.md}"
-export RALPH_PROMPT_BUILD="${RALPH_PROMPT_BUILD:-PROMPT_build.md}"
-export RALPH_PROMPT_PLAN_WORK="${RALPH_PROMPT_PLAN_WORK:-PROMPT_plan_work.md}"
+export FORGELOOP_PROMPT_PLAN="${FORGELOOP_PROMPT_PLAN:-PROMPT_plan.md}"
+export FORGELOOP_PROMPT_BUILD="${FORGELOOP_PROMPT_BUILD:-PROMPT_build.md}"
+export FORGELOOP_PROMPT_PLAN_WORK="${FORGELOOP_PROMPT_PLAN_WORK:-PROMPT_plan_work.md}"
 
-# Ralph coordination files (relative to repo root)
-export RALPH_IMPLEMENTATION_PLAN_FILE="${RALPH_IMPLEMENTATION_PLAN_FILE:-IMPLEMENTATION_PLAN.md}"
-export RALPH_STATUS_FILE="${RALPH_STATUS_FILE:-STATUS.md}"
-export RALPH_REQUESTS_FILE="${RALPH_REQUESTS_FILE:-REQUESTS.md}"
-export RALPH_QUESTIONS_FILE="${RALPH_QUESTIONS_FILE:-QUESTIONS.md}"
-export RALPH_CHANGELOG_FILE="${RALPH_CHANGELOG_FILE:-CHANGELOG.md}"
+# Forgeloop coordination files (relative to repo root)
+export FORGELOOP_IMPLEMENTATION_PLAN_FILE="${FORGELOOP_IMPLEMENTATION_PLAN_FILE:-IMPLEMENTATION_PLAN.md}"
+export FORGELOOP_STATUS_FILE="${FORGELOOP_STATUS_FILE:-STATUS.md}"
+export FORGELOOP_REQUESTS_FILE="${FORGELOOP_REQUESTS_FILE:-REQUESTS.md}"
+export FORGELOOP_QUESTIONS_FILE="${FORGELOOP_QUESTIONS_FILE:-QUESTIONS.md}"
+export FORGELOOP_CHANGELOG_FILE="${FORGELOOP_CHANGELOG_FILE:-CHANGELOG.md}"
 
 # Optional: command to run after Codex review auto-fixes (e.g. "pnpm test:ci", "npm test", "pytest -q")
-export RALPH_TEST_CMD="${RALPH_TEST_CMD:-}"
+export FORGELOOP_TEST_CMD="${FORGELOOP_TEST_CMD:-}"
 
 # Optional: deploy command the daemon runs when it sees [DEPLOY] in REQUESTS.md
-export RALPH_DEPLOY_CMD="${RALPH_DEPLOY_CMD:-}"
+export FORGELOOP_DEPLOY_CMD="${FORGELOOP_DEPLOY_CMD:-}"
 
 # Optional: when true, ingestion scripts append a [REPLAN] trigger after adding a request
-export RALPH_INGEST_TRIGGER_REPLAN="${RALPH_INGEST_TRIGGER_REPLAN:-false}"
+export FORGELOOP_INGEST_TRIGGER_REPLAN="${FORGELOOP_INGEST_TRIGGER_REPLAN:-false}"
 
 # Log ingestion (ingest-logs.sh)
-export RALPH_LOGS_DIR="${RALPH_LOGS_DIR:-logs}"
-export RALPH_INGEST_LOGS_CMD="${RALPH_INGEST_LOGS_CMD:-}"
-export RALPH_INGEST_LOGS_FILE="${RALPH_INGEST_LOGS_FILE:-}"
-export RALPH_INGEST_LOGS_TAIL="${RALPH_INGEST_LOGS_TAIL:-400}"
-export RALPH_INGEST_LOGS_MAX_CHARS="${RALPH_INGEST_LOGS_MAX_CHARS:-60000}"
+export FORGELOOP_LOGS_DIR="${FORGELOOP_LOGS_DIR:-logs}"
+export FORGELOOP_INGEST_LOGS_CMD="${FORGELOOP_INGEST_LOGS_CMD:-}"
+export FORGELOOP_INGEST_LOGS_FILE="${FORGELOOP_INGEST_LOGS_FILE:-}"
+export FORGELOOP_INGEST_LOGS_TAIL="${FORGELOOP_INGEST_LOGS_TAIL:-400}"
+export FORGELOOP_INGEST_LOGS_MAX_CHARS="${FORGELOOP_INGEST_LOGS_MAX_CHARS:-60000}"
 
 # Optional: auto-ingest logs after deploy in daemon mode (use with care)
-export RALPH_POST_DEPLOY_INGEST_LOGS="${RALPH_POST_DEPLOY_INGEST_LOGS:-false}"
-export RALPH_POST_DEPLOY_OBSERVE_SECONDS="${RALPH_POST_DEPLOY_OBSERVE_SECONDS:-0}"
+export FORGELOOP_POST_DEPLOY_INGEST_LOGS="${FORGELOOP_POST_DEPLOY_INGEST_LOGS:-false}"
+export FORGELOOP_POST_DEPLOY_OBSERVE_SECONDS="${FORGELOOP_POST_DEPLOY_OBSERVE_SECONDS:-0}"

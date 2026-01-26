@@ -2,15 +2,15 @@
 set -euo pipefail
 
 # =============================================================================
-# Ralph Report Ingestion
+# Forgeloop Report Ingestion
 # =============================================================================
 # Analyzes a report via LLM and appends a formatted request to REQUESTS.md.
 # Supports idempotent ingestion via content hashing.
 #
 # Usage:
-#   ./ralph/bin/ingest-report.sh --report reports/daily.md
-#   ./ralph/bin/ingest-report.sh --reports-dir reports --latest
-#   ./ralph/bin/ingest-report.sh --report reports/daily.md --mode plan-work
+#   ./forgeloop/bin/ingest-report.sh --report reports/daily.md
+#   ./forgeloop/bin/ingest-report.sh --reports-dir reports --latest
+#   ./forgeloop/bin/ingest-report.sh --report reports/daily.md --mode plan-work
 #
 # Options:
 #   --report <path>       Path to a specific report file
@@ -25,29 +25,29 @@ set -euo pipefail
 
 # Resolve repo directory and load libraries
 REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-RALPH_DIR="$REPO_DIR/ralph"
-if [[ ! -f "$RALPH_DIR/lib/core.sh" ]]; then
-    RALPH_DIR="$REPO_DIR"
+FORGELOOP_DIR="$REPO_DIR/forgeloop"
+if [[ ! -f "$FORGELOOP_DIR/lib/core.sh" ]]; then
+    FORGELOOP_DIR="$REPO_DIR"
 fi
-source "$RALPH_DIR/config.sh" 2>/dev/null || true
-source "$RALPH_DIR/lib/core.sh"
-source "$RALPH_DIR/lib/llm.sh"
+source "$FORGELOOP_DIR/config.sh" 2>/dev/null || true
+source "$FORGELOOP_DIR/lib/core.sh"
+source "$FORGELOOP_DIR/lib/llm.sh"
 
 # Setup runtime directories
-RUNTIME_DIR=$(ralph_core__ensure_runtime_dirs "$REPO_DIR")
-LOG_FILE="${RALPH_INGEST_LOG_FILE:-$RUNTIME_DIR/logs/ingest.log}"
+RUNTIME_DIR=$(forgeloop_core__ensure_runtime_dirs "$REPO_DIR")
+LOG_FILE="${FORGELOOP_INGEST_LOG_FILE:-$RUNTIME_DIR/logs/ingest.log}"
 
 # Defaults
-REPORTS_DIR="${RALPH_REPORTS_DIR:-reports}"
-REQUESTS_FILE="${RALPH_REQUESTS_FILE:-REQUESTS.md}"
+REPORTS_DIR="${FORGELOOP_REPORTS_DIR:-reports}"
+REQUESTS_FILE="${FORGELOOP_REQUESTS_FILE:-REQUESTS.md}"
 MODE="request"
 DRY_RUN=false
 FORCE=false
 REPORT_PATH=""
 JSON_OUT=""
 
-log() { ralph_core__log "$1" "$LOG_FILE"; }
-notify() { ralph_core__notify "$REPO_DIR" "$@"; }
+log() { forgeloop_core__log "$1" "$LOG_FILE"; }
+notify() { forgeloop_core__notify "$REPO_DIR" "$@"; }
 
 # =============================================================================
 # Argument Parsing
@@ -142,7 +142,7 @@ select_report() {
 
 get_report_hash() {
     local report_path="$1"
-    ralph_core__hash_file "$report_path" | cut -c1-12
+    forgeloop_core__hash_file "$report_path" | cut -c1-12
 }
 
 is_already_ingested() {
@@ -193,7 +193,7 @@ Respond with ONLY a JSON object (no markdown, no code fences):
 
     # Use claude/codex CLI for analysis
     local result
-    result=$(echo "$prompt" | ralph_llm__exec "$REPO_DIR" "stdin" "plan" "" "$LOG_FILE" 2>&1)
+    result=$(echo "$prompt" | forgeloop_llm__exec "$REPO_DIR" "stdin" "plan" "" "$LOG_FILE" 2>&1)
 
     # Try to extract JSON from result
     local json_text
@@ -307,7 +307,7 @@ main() {
                 notify "📥" "Report Ingested" "Added new request from report"
 
                 # Optionally trigger replan
-                if [[ "${RALPH_INGEST_TRIGGER_REPLAN:-false}" == "true" ]]; then
+                if [[ "${FORGELOOP_INGEST_TRIGGER_REPLAN:-false}" == "true" ]]; then
                     echo "[REPLAN]" >> "$requests_path"
                     log "Added [REPLAN] trigger"
                 fi
@@ -325,7 +325,7 @@ main() {
                 echo "$work_scope"
             else
                 log "Running plan-work with scope: $work_scope"
-                "$REPO_DIR/ralph/bin/loop.sh" plan-work "$work_scope" 1
+                "$REPO_DIR/forgeloop/bin/loop.sh" plan-work "$work_scope" 1
             fi
             ;;
 

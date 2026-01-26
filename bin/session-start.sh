@@ -2,15 +2,15 @@
 # =============================================================================
 # Session Start Hook
 # =============================================================================
-# Loads knowledge context for a Ralph session.
+# Loads knowledge context for a Forgeloop session.
 # Intended for use by loop.sh and manual invocation.
 #
 # Usage:
-#   ./ralph/bin/session-start.sh [--quiet] [--no-stdout] [--print-path]
+#   ./forgeloop/bin/session-start.sh [--quiet] [--no-stdout] [--print-path]
 #
 # Output:
 #   - By default, prints session context to stdout (suitable for inclusion in prompts)
-#   - Writes session context to: $RALPH_RUNTIME_DIR/session-context.md (or .ralph/session-context.md)
+#   - Writes session context to: $FORGELOOP_RUNTIME_DIR/session-context.md (or .forgeloop/session-context.md)
 #   - Note: exporting env vars from an executed script does not affect the parent shell.
 # =============================================================================
 
@@ -19,15 +19,15 @@ set -euo pipefail
 # Resolve paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-RALPH_DIR="$REPO_DIR/ralph"
+FORGELOOP_DIR="$REPO_DIR/forgeloop"
 
-# Prefer a vendored kit at $REPO_DIR/ralph, otherwise fall back to repo root.
-if [[ ! -f "$RALPH_DIR/lib/core.sh" ]]; then
-    RALPH_DIR="$REPO_DIR"
+# Prefer a vendored kit at $REPO_DIR/forgeloop, otherwise fall back to repo root.
+if [[ ! -f "$FORGELOOP_DIR/lib/core.sh" ]]; then
+    FORGELOOP_DIR="$REPO_DIR"
 fi
 
 # shellcheck disable=SC1090
-source "$RALPH_DIR/lib/core.sh" 2>/dev/null || true
+source "$FORGELOOP_DIR/lib/core.sh" 2>/dev/null || true
 
 KNOWLEDGE_DIR="$REPO_DIR/system/knowledge"
 EXPERTS_DIR="$REPO_DIR/system/experts"
@@ -38,10 +38,10 @@ QUIET=false
 NO_STDOUT=false
 PRINT_PATH=false
 
-if [[ "${RALPH_SESSION_QUIET:-}" == "true" ]]; then
+if [[ "${FORGELOOP_SESSION_QUIET:-}" == "true" ]]; then
     QUIET=true
 fi
-if [[ "${RALPH_SESSION_NO_STDOUT:-}" == "true" ]]; then
+if [[ "${FORGELOOP_SESSION_NO_STDOUT:-}" == "true" ]]; then
     NO_STDOUT=true
 fi
 
@@ -72,10 +72,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Resolve runtime directory (prefer core helper if available)
-if declare -F ralph_core__ensure_runtime_dirs >/dev/null 2>&1; then
-    RUNTIME_DIR=$(ralph_core__ensure_runtime_dirs "$REPO_DIR")
+if declare -F forgeloop_core__ensure_runtime_dirs >/dev/null 2>&1; then
+    RUNTIME_DIR=$(forgeloop_core__ensure_runtime_dirs "$REPO_DIR")
 else
-    local_runtime_dir="${RALPH_RUNTIME_DIR:-.ralph}"
+    local_runtime_dir="${FORGELOOP_RUNTIME_DIR:-.forgeloop}"
     if [[ "$local_runtime_dir" != /* ]]; then
         local_runtime_dir="$REPO_DIR/$local_runtime_dir"
     fi
@@ -242,7 +242,7 @@ load_experts() {
 # =============================================================================
 
 main() {
-    local task_context="${RALPH_TASK_CONTEXT:-}"
+    local task_context="${FORGELOOP_TASK_CONTEXT:-}"
     local output=""
     local experts=""
 
@@ -267,7 +267,7 @@ main() {
 
     # Write to file and export path
     echo -e "$output" > "$SESSION_CONTEXT_FILE"
-    export RALPH_SESSION_CONTEXT="$SESSION_CONTEXT_FILE"
+    export FORGELOOP_SESSION_CONTEXT="$SESSION_CONTEXT_FILE"
 
     if [[ "$PRINT_PATH" == "true" ]]; then
         echo "$SESSION_CONTEXT_FILE"

@@ -1,6 +1,6 @@
 {
   "project": "MyProject",
-  "branchName": "ralph/feature-name",
+  "branchName": "forgeloop/feature-name",
   "description": "Brief description of the feature being built",
   "tasks": [
     {

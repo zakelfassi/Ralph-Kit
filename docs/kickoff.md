@@ -1,25 +1,25 @@
 # Kickoff: Generate Specs/Docs with a Memory-Backed Agent
 
-Ralph works best when `specs/` and `docs/` are **high-quality and implementation-ready**.
+Forgeloop works best when `specs/` and `docs/` are **high-quality and implementation-ready**.
 
 For brand-new projects, you often want a *different agent* than the loop runner to author these files:
 
 - A “memory-backed” agent (ChatGPT Projects, Claude Projects, a long-running internal agent, etc.) that already knows your product domain, prior codebases, and preferences.
-- Then you hand off the resulting `specs/*` + `docs/*` to Ralph (this kit) for planning/building.
+- Then you hand off the resulting `specs/*` + `docs/*` to Forgeloop (this kit) for planning/building.
 
 This repo provides a repeatable workflow to do that.
 
 ## Recommended flow (greenfield repo)
 
 1. Create an empty repo (or minimal scaffold).
-2. Install Ralph Kit into it:
+2. Install Forgeloop into it:
    ```bash
-   /path/to/ralph-kit/install.sh /path/to/your/repo --wrapper
+   /path/to/forgeloop/install.sh /path/to/your/repo --wrapper
    ```
 3. Generate a kickoff prompt you can paste into your memory-backed agent:
    ```bash
    cd /path/to/your/repo
-   ./ralph/bin/kickoff.sh "<one paragraph project brief>"
+   ./forgeloop/bin/kickoff.sh "<one paragraph project brief>"
    ```
    This writes `docs/KICKOFF_PROMPT.md` in the target repo.
 4. Paste `docs/KICKOFF_PROMPT.md` into your memory-backed agent.
@@ -28,10 +28,10 @@ This repo provides a repeatable workflow to do that.
    - `docs/*` (PRD, architecture, design notes if relevant)
    - `specs/*` (one file per topic of concern, with acceptance criteria)
    - `IMPLEMENTATION_PLAN.md` (prioritized checklist, including REQUIRED TESTS per item)
-6. Run Ralph planning/building:
+6. Run Forgeloop planning/building:
    ```bash
-   ./ralph.sh plan 1
-   ./ralph.sh build 10
+   ./forgeloop.sh plan 1
+   ./forgeloop.sh build 10
    ```
 
 ## Tips

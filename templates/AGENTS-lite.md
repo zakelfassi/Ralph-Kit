@@ -51,8 +51,8 @@ Types: `fix`, `feat`, `refactor`, `docs`, `chore`, `test`
 ## Example
 
 ```bash
-./ralph.sh build --lite 1
-# or via loop.sh directly with RALPH_LITE=1
+./forgeloop.sh build --lite 1
+# or via loop.sh directly with FORGELOOP_LITE=1
 ```
 
 This mode prioritizes speed over ceremony. Use it for tasks where the overhead of full planning would exceed the task itself.

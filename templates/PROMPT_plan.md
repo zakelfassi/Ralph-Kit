@@ -1,4 +1,4 @@
-# Ralph Planning Prompt
+# Forgeloop Planning Prompt
 
 ## Context Loading
 
@@ -48,7 +48,7 @@ Bad (how to implement):
 
 If specs are ambiguous or you need clarification:
 ```bash
-./ralph/bin/ask.sh "clarification" "What does X mean in spec Y?"
+./forgeloop/bin/ask.sh "clarification" "What does X mean in spec Y?"
 ```
 
 Then STOP and wait for the answer. Do not guess requirements.

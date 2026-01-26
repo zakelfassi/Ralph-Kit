@@ -76,8 +76,8 @@ assert_file_exists "$experts_dir/documentation.md"
 assert_file_exists "$experts_dir/product.md"
 
 # Generate session context and ensure it loads real entries (not the "Entry Format" codeblock).
-export RALPH_RUNTIME_DIR="$tmp_repo/.ralph-test"
-context_path="$(RALPH_TASK_CONTEXT='ui docs' "$tmp_repo/ralph/bin/session-start.sh" --quiet --no-stdout --print-path)"
+export FORGELOOP_RUNTIME_DIR="$tmp_repo/.forgeloop-test"
+context_path="$(FORGELOOP_TASK_CONTEXT='ui docs' "$tmp_repo/forgeloop/bin/session-start.sh" --quiet --no-stdout --print-path)"
 assert_file_exists "$context_path"
 
 if grep -q "D-###" "$context_path" 2>/dev/null; then
@@ -96,18 +96,18 @@ if ! grep -q "^## Expert: Design" "$context_path"; then
 fi
 
 # Create a second decision so we can verify access updates are entry-scoped.
-"$tmp_repo/ralph/bin/session-end.sh" --capture decision "Second decision" "ctx" "dec" "" "tag1" >/dev/null
+"$tmp_repo/forgeloop/bin/session-end.sh" --capture decision "Second decision" "ctx" "dec" "" "tag1" >/dev/null
 
 set_last_accessed "$decisions_file" "D-001" "2000-01-01"
 set_last_accessed "$decisions_file" "D-002" "1999-01-01"
 
-"$tmp_repo/ralph/bin/session-end.sh" --update-access "D-001" >/dev/null
+"$tmp_repo/forgeloop/bin/session-end.sh" --update-access "D-001" >/dev/null
 
 assert_eq "$today" "$(get_last_accessed "$decisions_file" "D-001")"
 assert_eq "1999-01-01" "$(get_last_accessed "$decisions_file" "D-002")"
 
 # Index stats should count only numeric IDs (not the Entry Format "D-###" line).
-"$tmp_repo/ralph/bin/session-end.sh" summary >/dev/null
+"$tmp_repo/forgeloop/bin/session-end.sh" summary >/dev/null
 if ! grep -q "^- Decisions: 2$" "$index_file"; then
   echo "FAIL: expected Decisions count to be 2 in _index.md" >&2
   exit 1

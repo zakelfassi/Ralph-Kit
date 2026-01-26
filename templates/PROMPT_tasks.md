@@ -1,4 +1,4 @@
-# Ralph Tasks Build Prompt
+# Forgeloop Tasks Build Prompt
 
 You are implementing a single task from a structured task list.
 
@@ -13,7 +13,7 @@ Read these files to understand the current state:
 
 1. **Read `prd.json`** and find the highest priority task where `passes: false`
 2. **Read `progress.txt`** for codebase patterns and learnings
-2b. **Skill Forge preflight (always):** Before implementing, decide if this task introduces a repeatable workflow worth capturing as a Skill. If yes, create/update a focused Skill under `skills/<type>/<name>/SKILL.md` (repo-root) and run `./ralph/bin/sync-skills.sh`. (Avoid editing `ralph/skills` unless you’re changing the kit itself.)
+2b. **Skill Forge preflight (always):** Before implementing, decide if this task introduces a repeatable workflow worth capturing as a Skill. If yes, create/update a focused Skill under `skills/<type>/<name>/SKILL.md` (repo-root) and run `./forgeloop/bin/sync-skills.sh`. (Avoid editing `forgeloop/skills` unless you’re changing the kit itself.)
 3. **Implement ONLY that one task** - no more, no less
 4. **Verify acceptance criteria** by running the specified checks
 5. **Update files** when done:
@@ -40,7 +40,7 @@ If you cannot complete the task:
 1. Do NOT mark `passes: true`
 2. Add details to the task's `notes` field
 3. Document the blocker in `progress.txt`
-4. Use `./ralph/bin/ask.sh blocked "description"` if human input needed
+4. Use `./forgeloop/bin/ask.sh blocked "description"` if human input needed
 
 ### Browser Verification
 If acceptance criteria mention "verify in browser":

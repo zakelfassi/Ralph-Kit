@@ -1,6 +1,6 @@
 # Knowledge Index
 
-Session-to-session memory for Ralph. This index provides quick access to learned knowledge.
+Session-to-session memory for Forgeloop. This index provides quick access to learned knowledge.
 
 ## Quick Stats
 - Decisions: 0

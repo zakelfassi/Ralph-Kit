@@ -1,6 +1,6 @@
 # Implementation Plan
 
-This file is the prioritized backlog Ralph works from.
+This file is the prioritized backlog Forgeloop works from.
 
 Format:
 - [ ] Pending item
