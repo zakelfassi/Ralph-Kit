@@ -319,6 +319,24 @@ forgeloop_llm__exec() {
                 --model "$CLAUDE_MODEL" \
                 2>&1 | tee "$output_file" || exit_code=$?
 
+            # Detect auth failures for Claude (invalid API key, expired tokens)
+            if [[ "$exit_code" -ne 0 ]] && grep -qE "(invalid.*api.key|Invalid API Key|authentication_error|unauthorized|Could not resolve authentication)" "$output_file" 2>/dev/null; then
+                forgeloop_core__log "Claude auth failed! API key invalid or expired. Pausing — manual fix required." "$log_file"
+                forgeloop_core__notify "$repo_dir" "🔑" "Claude Auth Failed" "API key invalid or expired. Check ANTHROPIC_API_KEY."
+                CLAUDE_RATE_LIMITED_UNTIL=$(( $(date +%s) + 86400 ))
+                [[ -n "$state_file" ]] && forgeloop_llm__save_state "$state_file"
+
+                if [[ "$ENABLE_FAILOVER" = "true" ]] && forgeloop_llm__has_codex && ! forgeloop_llm__is_rate_limited "codex"; then
+                    forgeloop_core__log "Failing over to Codex (Claude auth broken)..." "$log_file"
+                    rm -f "$output_file"
+                    FORCE_MODEL="codex" forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
+                    return $?
+                fi
+
+                rm -f "$output_file"
+                return 1
+            fi
+
             if [[ "$exit_code" -ne 0 ]] && grep -qE "(\"error\":\{\"type\":\"rate_limit|anthropic.*rate.*limit|Usage limit reached|You.ve run out of|credit balance is too low)" "$output_file" 2>/dev/null; then
                 forgeloop_core__log "Claude rate limited!" "$log_file"
                 local sleep_duration
@@ -370,6 +388,33 @@ forgeloop_llm__exec() {
                 -m "$codex_model" \
                 -c "model_reasoning_effort=\"$codex_reasoning\"" \
                 - 2>&1 | tee "$output_file" || exit_code=$?
+
+            # Detect auth failures (expired/reused refresh tokens, invalid credentials)
+            if [[ "$exit_code" -ne 0 ]] && grep -qE "(Failed to refresh token|refresh token.*reused|token.*expired|Please.*sign in again|Invalid API Key|Incorrect API key|invalid_api_key)" "$output_file" 2>/dev/null; then
+                forgeloop_core__log "Codex auth failed! Token expired or revoked. Pausing loop — manual re-auth required." "$log_file"
+                forgeloop_core__notify "$repo_dir" "🔑" "Codex Auth Failed" "Refresh token expired or reused. Run: codex auth login"
+                # Mark codex as rate-limited for 24h to prevent spin loop
+                CODEX_RATE_LIMITED_UNTIL=$(( $(date +%s) + 86400 ))
+                [[ -n "$state_file" ]] && forgeloop_llm__save_state "$state_file"
+
+                if [[ "$ENABLE_FAILOVER" = "true" ]] && forgeloop_llm__has_claude && ! forgeloop_llm__is_rate_limited "claude"; then
+                    forgeloop_core__log "Failing over to Claude (Codex auth broken)..." "$log_file"
+                    rm -f "$output_file"
+                    FORCE_MODEL="claude" forgeloop_llm__exec "$repo_dir" "stdin" "$task_type" "$state_file" "$log_file" <<< "$prompt_content"
+                    return $?
+                fi
+
+                rm -f "$output_file"
+                return 1
+            fi
+
+            # Detect JSON schema validation errors (strict mode enforcement)
+            if [[ "$exit_code" -ne 0 ]] && grep -qE "(Invalid schema for response_format|invalid_json_schema|additionalProperties.*required|required.*is required to be supplied)" "$output_file" 2>/dev/null; then
+                forgeloop_core__log "Codex schema error! Schema rejected by API. Skipping review step." "$log_file"
+                forgeloop_core__notify "$repo_dir" "📋" "Schema Error" "Codex output schema rejected by API. Check schemas/*.schema.json"
+                rm -f "$output_file"
+                return 1
+            fi
 
             if [[ "$exit_code" -ne 0 ]] && grep -qE "(openai.*rate.*limit|Rate limit reached for|You exceeded your current quota|Request too large)" "$output_file" 2>/dev/null; then
                 forgeloop_core__log "Codex rate limited!" "$log_file"
